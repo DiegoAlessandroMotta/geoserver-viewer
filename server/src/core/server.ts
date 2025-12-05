@@ -2,7 +2,7 @@ import express, { Express, Router } from 'express'
 import { Server as HttpServer } from 'node:http'
 import cors from 'cors'
 import { serverConfig } from '@/shared/config'
-import { ILogger } from '@/apps/proxy/domain/services/logger.interface'
+import { ILogger } from '@/shared/interfaces/logger.interface'
 
 interface ServerOptions {
   logger: ILogger

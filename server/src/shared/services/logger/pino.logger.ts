@@ -1,7 +1,4 @@
-import {
-  ILogger,
-  LoggerMessage,
-} from '@/apps/proxy/domain/services/logger.interface'
+import { ILogger, LoggerMessage } from '@/shared/interfaces/logger.interface'
 import { serverConfig } from '@/shared/config'
 import pino, { type Logger } from 'pino'
 
