@@ -8,7 +8,7 @@ export class PinoLogger implements ILogger {
   constructor(options?: pino.LoggerOptions) {
     this.logger = pino({
       level: serverConfig.logLevel,
-      transport: serverConfig.isProduction
+      transport: !serverConfig.isProduction
         ? {
             target: 'pino-pretty',
             options: {
