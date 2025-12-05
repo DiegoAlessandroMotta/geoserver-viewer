@@ -10,7 +10,15 @@
     "lint:server": "pnpm -F server lint",
     "lint-fix:server": "pnpm -F server lint-fix",
     "format:server": "pnpm -F server format",
-    "format-check:server": "pnpm -F server format-check"
+    "format-check:server": "pnpm -F server format-check",
+    "dev:client": "pnpm -F client dev",
+    "build:client": "pnpm -F client build",
+    "preview:client": "pnpm -F client preview",
+    "type-check:client": "pnpm -F client type-check",
+    "lint:client": "pnpm -F client lint",
+    "lint-fix:client": "pnpm -F client lint-fix",
+    "format:client": "pnpm -F client format",
+    "format-check:client": "pnpm -F client format-check"
   },
   "private": true,
   "packageManager": "pnpm@10.24.0",
