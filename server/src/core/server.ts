@@ -3,6 +3,7 @@ import { Server as HttpServer } from 'node:http'
 import cors from 'cors'
 import { serverConfig } from '@/shared/config'
 import { ILogger } from '@/shared/interfaces/logger.interface'
+import { websocketServer } from '@/shared/providers'
 
 interface ServerOptions {
   logger: ILogger
@@ -35,6 +36,9 @@ export class Server {
 
     this._logger.debug('Configuring Routes...')
     this.configureRoutes()
+
+    this._logger.debug('Configure Websocket Server...')
+    await websocketServer.configure()
   }
 
   private configureMiddlewares(): void {
@@ -47,8 +51,7 @@ export class Server {
       )
     }
 
-    this._app.use(express.json({ limit: '10mb' }))
-    this._app.use(express.urlencoded({ limit: '10mb', extended: true }))
+    this._app.use(express.json())
   }
 
   private configureRoutes(): void {
