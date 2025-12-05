@@ -12,6 +12,10 @@
 		"format": "prettier --write \"src/**/*.ts\"",
 		"format-check": "prettier --check \"src/**/*.ts\""
 	},
+	"engines": {
+		"node": ">=22",
+		"npm": ">=9"
+	},
 	"keywords": [],
 	"author": "",
 	"license": "ISC",
