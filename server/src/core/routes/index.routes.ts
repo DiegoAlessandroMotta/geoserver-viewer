@@ -1,15 +1,19 @@
 import { Router } from 'express'
-import { ROUTES_API_V1 } from './const.routes'
+import { PROXY_ROUTES, ROUTES_API_V1 } from './const.routes'
+import { IRouter } from '@/shared/interfaces/router.interface'
+import { proxyRoutes } from '@/apps/proxy/infrastructure/providers'
 
-class ApiV1Routes {
+class ApiV1Routes implements IRouter {
   routes() {
     const router = Router()
+
+    router.use(PROXY_ROUTES.prefix, proxyRoutes.routes())
 
     return router
   }
 }
 
-export class AppRoutes {
+export class AppRoutes implements IRouter {
   routes() {
     const router = Router()
     const apiV1Routes = new ApiV1Routes()
