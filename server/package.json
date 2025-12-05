@@ -4,13 +4,34 @@
 	"description": "Server application for GeoServer Viewer",
 	"type": "module",
 	"scripts": {
-		"dev": "node --watch src/index.js",
-		"start": "node src/index.js",
-		"lint": "eslint . --ext .js,.mjs --fix --ignore-path .gitignore"
+		"dev": "tsx watch ./src/app.ts",
+		"build": "rimraf ./dist && tsc --skipLibCheck && tsc-alias",
+		"start": "node ./dist/src/app.js",
+		"type-check": "tsc --noEmit --skipLibCheck",
+		"lint": "eslint ./src --ext .ts",
+		"lint-fix": "eslint ./src --ext .ts --fix",
+		"format": "prettier --write \"src/**/*.ts\"",
+		"format-check": "prettier --check \"src/**/*.ts\""
 	},
-	"dependencies": {},
-	"devDependencies": {},
 	"keywords": [],
 	"author": "",
-	"license": "ISC"
+	"license": "ISC",
+	"dependencies": {
+		"cors": "^2.8.5",
+		"remove": "^0.1.5",
+		"ts-node": "^10.9.2",
+		"ts-patch": "^3.3.0",
+		"tsc-alias": "^1.8.16",
+		"tsx": "^4.21.0"
+	},
+	"devDependencies": {
+		"@eslint/js": "^9.39.1",
+		"@types/cors": "^2.8.19",
+		"@types/express": "^5.0.6",
+		"eslint": "^9.39.1",
+		"prettier": "^3.7.4",
+		"rimraf": "^6.1.2",
+		"typescript": "^5.9.3",
+		"typescript-eslint": "^8.48.1"
+	}
 }
