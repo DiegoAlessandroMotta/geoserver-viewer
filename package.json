@@ -1,0 +1,14 @@
+{
+  "name": "geoserver-viewer",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "packageManager": "pnpm@10.23.0",
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "workspaces": [
+    "client",
+    "server"
+  ]
+}

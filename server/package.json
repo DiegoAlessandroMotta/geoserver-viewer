@@ -1,0 +1,16 @@
+{
+	"name": "@geoserver-viewer/server",
+	"version": "1.0.0",
+	"description": "Server application for GeoServer Viewer",
+	"type": "module",
+	"scripts": {
+		"dev": "node --watch src/index.js",
+		"start": "node src/index.js",
+		"lint": "eslint . --ext .js,.mjs --fix --ignore-path .gitignore"
+	},
+	"dependencies": {},
+	"devDependencies": {},
+	"keywords": [],
+	"author": "",
+	"license": "ISC"
+}
