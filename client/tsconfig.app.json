@@ -14,7 +14,7 @@
     ],
     "skipLibCheck": true,
     /* Path mapping */
-    "baseUrl": ".",
+    "baseUrl": "./",
     "paths": {
       "@/*": [
         "./src/*"
