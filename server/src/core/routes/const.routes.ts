@@ -1,5 +1,5 @@
-export const ROUTES_API_V1 = {
-  prefix: '/api/v1',
+export const API_ROUTES = {
+  up: '/up',
 }
 
 export const PROXY_ROUTES = {
