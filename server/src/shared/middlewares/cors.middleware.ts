@@ -24,8 +24,10 @@ export class CorsMiddleware {
     allowedHeaders: [
       'Content-Type',
       'Authorization',
-      'X-Requested-With',
-      'Accept',
+      'X-GeoServer-BaseUrl',
+      'X-Session-Id',
     ],
+    exposedHeaders: ['Content-Type', 'Content-Length'],
+    credentials: false,
   })
 }
