@@ -1,5 +1,5 @@
 import express, { Express, Router } from 'express'
-import { Server as HttpServer } from 'node:http'
+import { createServer, Server as HttpServer } from 'node:http'
 import cors from 'cors'
 import { serverConfig } from '@/shared/config'
 import { ILogger } from '@/shared/interfaces/logger.interface'
@@ -31,14 +31,20 @@ export class Server {
   }
 
   public async configureServer(): Promise<void> {
-    this._logger.debug('Configuring Middlewares...')
+    this._logger.debug({
+      message: 'Configuring Middlewares...',
+    })
     this.configureMiddlewares()
 
-    this._logger.debug('Configuring Routes...')
+    this._logger.debug({
+      message: 'Configuring Routes...',
+    })
     this.configureRoutes()
 
-    this._logger.debug('Configure Websocket Server...')
-    await websocketServer.configure()
+    this._logger.debug({
+      message: 'Configuring WebSocket Server...',
+    })
+    this.configureWebsocketServer()
   }
 
   private configureMiddlewares(): void {
@@ -46,9 +52,12 @@ export class Server {
 
     if (serverConfig.corsEnabled) {
       this._app.use(cors({ origin: serverConfig.corsAllowedOrigins }))
-      this._logger.info(
-        `CORS enabled for origins: ${serverConfig.corsAllowedOrigins.join(', ')}`,
-      )
+      this._logger.info({
+        message: 'CORS enabled',
+        context: {
+          origins: serverConfig.corsAllowedOrigins.join(', '),
+        },
+      })
     }
 
     this._app.use(express.json())
@@ -58,12 +67,26 @@ export class Server {
     this._app.use(this._routes)
   }
 
+  private configureWebsocketServer(): void {
+    this._httpServer = createServer(this._app)
+
+    websocketServer.configure(this._httpServer)
+  }
+
   public async start(): Promise<void> {
     return new Promise((resolve, reject) => {
-      this._httpServer = this._app.listen(this._port, this._host, () => {
-        this._logger.info(
-          `Server running on http://${this._host}:${this._port}`,
-        )
+      if (!this._httpServer) {
+        return reject(new Error('HTTP server not configured'))
+      }
+
+      this._httpServer.listen(this._port, this._host, () => {
+        this._logger.info({
+          message: 'Server started',
+          context: {
+            url: `http://${this._host}:${this._port}`,
+            wsUrl: `ws://${this._host}:${this._port}/ws`,
+          },
+        })
 
         resolve()
       })
@@ -80,18 +103,24 @@ export class Server {
         this._httpServer.close((error) => {
           if (error != null) {
             this._logger.error({
-              message: 'Error stopping server:',
-              context: { error },
+              message: 'Error stopping server',
+              context: {
+                error: error instanceof Error ? error.message : String(error),
+              },
             })
 
             return reject(error)
           }
 
-          this._logger.info('Server stopped successfully.')
+          this._logger.info({
+            message: 'Server stopped successfully',
+          })
           resolve()
         })
       } else {
-        this._logger.warn('No HTTP server running to stop.')
+        this._logger.warn({
+          message: 'No HTTP server running to stop',
+        })
         resolve()
       }
     })
