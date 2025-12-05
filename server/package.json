@@ -18,6 +18,9 @@
 	"license": "ISC",
 	"dependencies": {
 		"cors": "^2.8.5",
+		"dotenv": "^17.2.3",
+		"env-var": "^7.5.0",
+		"pino": "^10.1.0",
 		"remove": "^0.1.5",
 		"ts-node": "^10.9.2",
 		"ts-patch": "^3.3.0",
