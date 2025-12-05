@@ -1,7 +1,7 @@
 import { Router } from 'express'
 import { API_ROUTES, PROXY_ROUTES } from '@/core/routes/const.routes'
 import { IRouter } from '@/shared/interfaces/router.interface'
-import { proxyRoutes } from '@/apps/proxy/infrastructure/providers'
+import { proxyRoutes } from '@/apps/proxy/providers'
 
 export class AppRoutes implements IRouter {
   routes() {

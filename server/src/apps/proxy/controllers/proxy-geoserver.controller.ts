@@ -1,7 +1,7 @@
 import { Request, Response } from 'express'
 import { ILogger } from '@/shared/interfaces/logger.interface'
-import { ProxyGeoServerUseCase } from '@/apps/proxy/application/use-cases/proxy-geoserver.use-case'
-import { GeoServerUrlValidator } from '@/apps/proxy/infrastructure/in/validators/geoserver-url.validator'
+import { ProxyGeoServerUseCase } from '@/apps/proxy/use-cases/proxy-geoserver.use-case'
+import { GeoServerUrlValidator } from '@/apps/proxy/validators/geoserver-url.validator'
 import { WebSocketSessionService } from '@/shared/services/websocket-server/websocket-session.service'
 
 export class ProxyGeoserverController {
