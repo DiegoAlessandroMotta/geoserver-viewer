@@ -2,7 +2,7 @@ import { WebSocket, WebSocketServer as WSServer } from 'ws'
 import { Server as HttpServer } from 'node:http'
 import crypto from 'node:crypto'
 import { ILogger } from '@/shared/interfaces/logger.interface'
-import { WebSocketSessionService } from './websocket-session.service'
+import { WebSocketSessionService } from '@/shared/services/websocket-server/websocket-session.service'
 
 export class WebSocketServer {
   private _wsServer?: WSServer
