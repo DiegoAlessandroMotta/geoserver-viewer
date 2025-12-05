@@ -1,10 +1,9 @@
 import cors from 'cors'
-import { serverConfig } from '@/shared/config'
 
 export class CorsMiddleware {
-  static readonly allowedOrigins = serverConfig.corsAllowedOrigins
+  constructor(readonly allowedOrigins: string[]) {}
 
-  static readonly requests = cors({
+  handle = cors({
     origin: (origin, callback) => {
       if (origin === undefined) {
         callback(null, true)
@@ -12,8 +11,8 @@ export class CorsMiddleware {
       }
 
       if (
-        CorsMiddleware.allowedOrigins.includes('*') ||
-        CorsMiddleware.allowedOrigins.includes(origin)
+        this.allowedOrigins.includes('*') ||
+        this.allowedOrigins.includes(origin)
       ) {
         callback(null, true)
         return

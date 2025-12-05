@@ -1,9 +1,12 @@
 import express, { Express, Router } from 'express'
 import { createServer, Server as HttpServer } from 'node:http'
-import cors from 'cors'
 import { serverConfig } from '@/shared/config'
 import { ILogger } from '@/shared/interfaces/logger.interface'
-import { websocketServer } from '@/shared/providers'
+import {
+  corsMiddleware,
+  loggerMiddleware,
+  websocketServer,
+} from '@/shared/providers'
 
 interface ServerOptions {
   logger: ILogger
@@ -51,7 +54,7 @@ export class Server {
     this._app.disable('x-powered-by')
 
     if (serverConfig.corsEnabled) {
-      this._app.use(cors({ origin: serverConfig.corsAllowedOrigins }))
+      this._app.use(corsMiddleware.handle)
       this._logger.info({
         message: 'CORS enabled',
         context: {
@@ -61,6 +64,7 @@ export class Server {
     }
 
     this._app.use(express.json())
+    this._app.use(loggerMiddleware.handle)
   }
 
   private configureRoutes(): void {
