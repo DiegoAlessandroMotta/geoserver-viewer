@@ -1,3 +1,9 @@
+import { MapContainer } from '@/features/map/MapContainer'
+
 export const App = () => {
-  return <div>App component</div>
+  return (
+    <>
+      <MapContainer />
+    </>
+  )
 }
