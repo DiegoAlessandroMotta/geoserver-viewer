@@ -28,7 +28,7 @@ export class GeoserverService {
   }
 
   public getVectorTileUrl = (layerName: string) => {
-    return `${this.proxyUrl}/gwc/service/tms/1.0.0/${layerName}@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf`
+    return `${this.proxyUrl}/geoserver/gwc/service/tms/1.0.0/${layerName}@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf`
   }
 
   public invalidateCache = (): void => {
