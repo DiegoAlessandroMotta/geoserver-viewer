@@ -1,3 +1,4 @@
+import { XMLParser } from 'fast-xml-parser'
 import type { ILogger } from '@/shared/interfaces/logger.interface'
 
 interface GeoserverServiceOptions {
@@ -8,10 +9,16 @@ interface GeoserverServiceOptions {
 export class GeoserverService {
   private readonly proxyUrl: string
   private readonly logger: ILogger
+  private readonly xmlParser: XMLParser
 
   constructor({ proxyUrl, logger }: GeoserverServiceOptions) {
     this.proxyUrl = proxyUrl
     this.logger = logger
+    this.xmlParser = new XMLParser({
+      ignoreAttributes: false,
+      attributeNamePrefix: '@',
+      textNodeName: '#text',
+    })
   }
 
   public getVectorTileUrl = (layerName: string) => {
@@ -74,8 +81,11 @@ export class GeoserverService {
       }
 
       return await res.json()
-    } catch (err) {
-      console.error(`Error fetching details for layer (${layerName}):`, err)
+    } catch (error) {
+      this.logger.error({
+        msg: `Error fetching details for layer (${layerName}):`,
+        error,
+      })
       return null
     }
   }
@@ -101,61 +111,34 @@ export class GeoserverService {
 
   private parseXML = (xmlString: string) => {
     try {
-      const parser = new DOMParser()
-      const xmlDoc = parser.parseFromString(xmlString, 'text/xml')
-
-      if (xmlDoc.getElementsByTagName('parsererror').length) {
-        console.error('XML parsing error')
-        return null
-      }
-
-      return xmlDoc
+      return this.xmlParser.parse(xmlString)
     } catch (error) {
       this.logger.error({ msg: 'Error parsing XML:', error })
       return null
     }
   }
 
-  private extractCRSFromXML = (xmlDoc: Document, layerName: string) => {
+  private extractCRSFromXML = (
+    parsedXML: Record<string, any>,
+    layerName: string,
+  ) => {
     try {
-      if (!xmlDoc) return []
+      if (!parsedXML) return []
 
-      const layers = xmlDoc.getElementsByTagName('Layer')
-      let foundLayer = null
+      const layers = parsedXML?.WMS_Capabilities?.Capability?.Layer?.Layer
+      if (!layers) return []
 
-      for (let i = 0; i < layers.length; i++) {
-        const layer = layers[i]
-        const nameElement = layer.querySelector('Name')
-
-        if (nameElement && nameElement.textContent.trim() === layerName) {
-          const childLayers = layer.querySelectorAll(':scope > Layer')
-
-          if (childLayers.length === 0) {
-            foundLayer = layer
-            break
-          }
-
-          if (!foundLayer) {
-            foundLayer = layer
-          }
-        }
-      }
+      const layersList = Array.isArray(layers) ? layers : [layers]
+      const foundLayer = layersList.find((layer) => layer.Name === layerName)
 
       if (!foundLayer) return []
 
-      const crsElements = foundLayer.querySelectorAll(':scope > CRS')
-      const crsList: string[] = []
+      const crsList = foundLayer.CRS
+      if (!crsList) return []
 
-      crsElements.forEach((crsEl) => {
-        const crs = crsEl.textContent.trim()
-        if (crs && !crsList.includes(crs)) {
-          crsList.push(crs)
-        }
-      })
-
-      return crsList
-    } catch (err) {
-      console.error('Error extracting CRS from XML:', err)
+      return Array.isArray(crsList) ? crsList : [crsList]
+    } catch (error) {
+      this.logger.error({ msg: 'Error extracting CRS from XML:', error })
       return []
     }
   }
@@ -170,13 +153,16 @@ export class GeoserverService {
       if (!res.ok) return []
 
       const text = await res.text()
-      const xmlDoc = this.parseXML(text)
+      const parsedXML = this.parseXML(text)
 
-      if (!xmlDoc) return []
+      if (!parsedXML) return []
 
-      return this.extractCRSFromXML(xmlDoc, layerName)
-    } catch (err) {
-      console.warn(`Error fetching CRS for layer ${layerName}:`, err)
+      return this.extractCRSFromXML(parsedXML, layerName)
+    } catch (error) {
+      this.logger.warn({
+        msg: `Error fetching CRS for layer ${layerName}:`,
+        error,
+      })
       return []
     }
   }
@@ -185,7 +171,7 @@ export class GeoserverService {
     try {
       const layersList = await this.fetchAllLayersFromREST()
       if (layersList.length === 0) {
-        console.warn('No layers found from REST API')
+        this.logger.warn('No layers found from REST API')
         return []
       }
 
@@ -198,7 +184,7 @@ export class GeoserverService {
 
         const details = await this.fetchLayerDetails(layerName)
         if (!details?.layer) {
-          console.warn(`No details found for layer: ${layerName}`)
+          this.logger.warn(`No details found for layer: ${layerName}`)
           continue
         }
 
@@ -224,23 +210,23 @@ export class GeoserverService {
         })
       }
 
-      console.debug(
+      this.logger.debug(
         `fetchWMSLayers: found ${detailedLayers.length} layers (workspace=${workspace})`,
       )
       if (detailedLayers.length > 0)
-        console.debug(
-          'layers',
-          detailedLayers.map((l) => ({
+        this.logger.debug({
+          msg: 'layers',
+          data: detailedLayers.map((l) => ({
             name: l.name,
             workspace: l.workspace,
             store: l.store,
             crs: l.crs,
           })),
-        )
+        })
 
       return detailedLayers
-    } catch (err) {
-      console.error('Error fetching WMS layers:', err)
+    } catch (error) {
+      this.logger.error({ msg: 'Error fetching WMS layers:', error })
       return []
     }
   }
