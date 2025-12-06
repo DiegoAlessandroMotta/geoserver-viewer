@@ -27,4 +27,4 @@ export const config = {
     import.meta.env.VITE_MAP_STYLE ??
       'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
   ),
-}
+} as const
