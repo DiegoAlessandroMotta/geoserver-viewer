@@ -10,6 +10,12 @@ export class GeoserverService {
   private readonly proxyUrl: string
   private readonly logger: ILogger
   private readonly xmlParser: XMLParser
+  private wmsCapabilitiesCache: Record<string, any> | null = null
+  private wmsCapabilitiesCachePromise: Promise<Record<
+    string,
+    any
+  > | null> | null = null
+  private readonly MAX_CONCURRENT_REQUESTS = 6
 
   constructor({ proxyUrl, logger }: GeoserverServiceOptions) {
     this.proxyUrl = proxyUrl
@@ -23,6 +29,12 @@ export class GeoserverService {
 
   public getVectorTileUrl = (layerName: string) => {
     return `${this.proxyUrl}/gwc/service/tms/1.0.0/${layerName}@EPSG%3A900913@pbf/{z}/{x}/{y}.pbf`
+  }
+
+  public invalidateCache = (): void => {
+    this.logger.debug({ msg: 'Cache invalidated manually' })
+    this.wmsCapabilitiesCache = null
+    this.wmsCapabilitiesCachePromise = null
   }
 
   private getDefaultHeaders = () => {
@@ -45,6 +57,39 @@ export class GeoserverService {
 
   private getBaseUrl = () => {
     return `${this.proxyUrl}/geoserver`
+  }
+
+  private async executeWithConcurrencyLimit<T>(
+    items: T[],
+    executor: (item: T) => Promise<any>,
+  ): Promise<any[]> {
+    const results: any[] = []
+    let currentIndex = 0
+
+    const executeNext = async (): Promise<void> => {
+      while (currentIndex < items.length) {
+        const index = currentIndex
+        currentIndex++
+
+        try {
+          const result = await executor(items[index])
+          results[index] = result
+        } catch (error) {
+          this.logger.error({
+            msg: `Error processing item ${index}:`,
+            error,
+          })
+          results[index] = null
+        }
+      }
+    }
+
+    const workers = Array.from({ length: this.MAX_CONCURRENT_REQUESTS }).map(
+      () => executeNext(),
+    )
+
+    await Promise.all(workers)
+    return results
   }
 
   private fetchAllLayersFromREST = async () => {
@@ -143,21 +188,63 @@ export class GeoserverService {
     }
   }
 
-  private fetchLayerCRS = async (layerName: string) => {
+  private fetchWMSCapabilities = async (): Promise<Record<
+    string,
+    any
+  > | null> => {
+    if (this.wmsCapabilitiesCachePromise) {
+      return this.wmsCapabilitiesCachePromise
+    }
+
+    if (this.wmsCapabilitiesCache) {
+      return this.wmsCapabilitiesCache
+    }
+
+    this.wmsCapabilitiesCachePromise = (async () => {
+      try {
+        const base = this.getBaseUrl()
+        const url = `${base}/wms?service=WMS&version=1.3.0&request=GetCapabilities`
+        const res = await fetch(url, {
+          headers: this.getDefaultHeaders(),
+        })
+        if (!res.ok) {
+          this.logger.warn({
+            msg: 'WMS GetCapabilities request failed',
+            status: res.status,
+          })
+          return null
+        }
+
+        const text = await res.text()
+        const parsedXML = this.parseXML(text)
+
+        if (parsedXML) {
+          this.wmsCapabilitiesCache = parsedXML
+        }
+
+        return parsedXML
+      } catch (error) {
+        this.logger.error({ msg: 'Error fetching WMS capabilities:', error })
+        return null
+      } finally {
+        this.wmsCapabilitiesCachePromise = null
+      }
+    })()
+
+    return this.wmsCapabilitiesCachePromise
+  }
+
+  private fetchLayerCRS = async (
+    layerName: string,
+    cachedCapabilities?: Record<string, any>,
+  ) => {
     try {
-      const base = this.getBaseUrl()
-      const url = `${base}/wms?service=WMS&version=1.3.0&request=GetCapabilities`
-      const res = await fetch(url, {
-        headers: this.getDefaultHeaders(),
-      })
-      if (!res.ok) return []
+      const capabilities =
+        cachedCapabilities || (await this.fetchWMSCapabilities())
 
-      const text = await res.text()
-      const parsedXML = this.parseXML(text)
+      if (!capabilities) return []
 
-      if (!parsedXML) return []
-
-      return this.extractCRSFromXML(parsedXML, layerName)
+      return this.extractCRSFromXML(capabilities, layerName)
     } catch (error) {
       this.logger.warn({
         msg: `Error fetching CRS for layer ${layerName}:`,
@@ -171,48 +258,62 @@ export class GeoserverService {
     try {
       const layersList = await this.fetchAllLayersFromREST()
       if (layersList.length === 0) {
-        this.logger.warn('No layers found from REST API')
+        this.logger.warn({ msg: 'No layers found from REST API' })
         return []
       }
 
-      const detailedLayers = []
-      for (const layerInfo of layersList) {
-        const layerName = layerInfo.name
+      const capabilities = await this.fetchWMSCapabilities()
 
-        const [layerWorkspace, ...nameParts] = layerName.split(':')
-        const shortName = nameParts.join(':')
+      this.logger.debug({
+        msg: `Starting to fetch details for ${layersList.length} layers with concurrency limit of ${this.MAX_CONCURRENT_REQUESTS}`,
+      })
 
-        const details = await this.fetchLayerDetails(layerName)
-        if (!details?.layer) {
-          this.logger.warn(`No details found for layer: ${layerName}`)
-          continue
-        }
+      const results = await this.executeWithConcurrencyLimit(
+        layersList,
+        async (layerInfo) => {
+          const layerName = layerInfo.name
 
-        const crs = await this.fetchLayerCRS(layerName)
+          const [layerWorkspace, ...nameParts] = layerName.split(':')
+          const shortName = nameParts.join(':')
 
-        const layer = details.layer
-        const resourceInfo = this.parseResourceInfo(
-          layer.resource?.href || layer.resource?.['@href'],
-        )
+          const [details, crs] = await Promise.all([
+            this.fetchLayerDetails(layerName),
+            this.fetchLayerCRS(layerName, capabilities ?? undefined),
+          ])
 
-        detailedLayers.push({
-          name: layerName,
-          title: layer.title || layer.name || shortName,
-          short: shortName,
-          workspace: resourceInfo.workspace || layerWorkspace,
-          store: resourceInfo.store,
-          type: layer.type,
-          fullName: layer.name,
-          dateCreated: layer.dateCreated,
-          dateModified: layer.dateModified,
-          defaultStyle: layer.defaultStyle?.name,
-          crs: crs,
-        })
-      }
+          if (!details?.layer) {
+            this.logger.warn({
+              msg: `No details found for layer: ${layerName}`,
+            })
+            return null
+          }
 
-      this.logger.debug(
-        `fetchWMSLayers: found ${detailedLayers.length} layers (workspace=${workspace})`,
+          const layer = details.layer
+          const resourceInfo = this.parseResourceInfo(
+            layer.resource?.href || layer.resource?.['@href'],
+          )
+
+          return {
+            name: layerName,
+            title: layer.title || layer.name || shortName,
+            short: shortName,
+            workspace: resourceInfo.workspace || layerWorkspace,
+            store: resourceInfo.store,
+            type: layer.type,
+            fullName: layer.name,
+            dateCreated: layer.dateCreated,
+            dateModified: layer.dateModified,
+            defaultStyle: layer.defaultStyle?.name,
+            crs: crs,
+          }
+        },
       )
+
+      const detailedLayers = results.filter((layer) => layer !== null)
+
+      this.logger.debug({
+        msg: `fetchWMSLayers: found ${detailedLayers.length} layers (workspace=${workspace})`,
+      })
       if (detailedLayers.length > 0)
         this.logger.debug({
           msg: 'layers',
