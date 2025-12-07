@@ -2,7 +2,7 @@ import { config } from '@/shared/config'
 import { useRef } from 'react'
 import Map, { NavigationControl, ScaleControl } from 'react-map-gl/maplibre'
 import mapLibregl from 'maplibre-gl'
-import { CustomLayers } from './components/CustomLayers'
+import { MapLayers } from './components/MapLayers'
 
 export const MapContainer = () => {
   const mapRef = useRef(null)
@@ -50,7 +50,7 @@ export const MapContainer = () => {
       >
         <NavigationControl position="top-right" />
         <ScaleControl position="bottom-left" maxWidth={100} unit="metric" />
-        <CustomLayers />
+        <MapLayers />
       </Map>
     </>
   )
