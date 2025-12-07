@@ -1,4 +1,4 @@
-import { ConsoleLogger } from '@/shared/services/logger/pino.logger'
+import { ConsoleLogger } from '@/shared/services/logger/console.logger'
 import { GeoserverService } from '@/shared/services/geoserver.service'
 import { config } from '@/shared/config'
 
