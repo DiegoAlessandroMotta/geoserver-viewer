@@ -32,7 +32,12 @@ export class GeoserverService {
     })
 
     this.configManager.onChange((change) => {
-      if (change.geoserverUrl != null || change.workspace != null) {
+      if (
+        change.geoserverUrl !== undefined ||
+        change.workspace !== undefined ||
+        change.credentials !== undefined ||
+        change.sessionId !== undefined
+      ) {
         this.invalidateCache()
       }
     })
@@ -43,7 +48,7 @@ export class GeoserverService {
   }
 
   public invalidateCache = (): void => {
-    this.logger.debug({ msg: 'Cache invalidated manually' })
+    this.logger.debug({ msg: '(GeoserverService) Cache invalidated' })
     this.wmsCapabilitiesCache = null
     this.wmsCapabilitiesCachePromise = null
   }
@@ -271,6 +276,8 @@ export class GeoserverService {
   }
 
   public fetchWMSLayers = async (workspace: string) => {
+    this.invalidateCache()
+
     try {
       const layersList = await this.fetchAllLayersFromREST()
       if (layersList.length === 0) {

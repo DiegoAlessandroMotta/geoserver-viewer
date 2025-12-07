@@ -103,12 +103,18 @@ export const LayerContextProvider = ({
   useEffect(() => {
     mountedRef.current = true
     logger.debug({
-      msg: 'LayerContextProvider: configuration changed, invalidating cache and clearing layers',
+      msg: 'LayerContextProvider: configuration changed, clearing layers and scheduling refresh',
     })
-    geoserverService.invalidateCache()
-    Promise.resolve().then(() => refreshLayers())
+    const debounceDelayMs = 50
+    const timeoutId = setTimeout(() => {
+      logger.debug({
+        msg: 'LayerContextProvider: scheduled refresh is running',
+      })
+      refreshLayers()
+    }, debounceDelayMs)
 
     return () => {
+      clearTimeout(timeoutId)
       mountedRef.current = false
     }
   }, [
