@@ -1,13 +1,12 @@
 import { appConfig } from '@/shared/config'
 import { useRef } from 'react'
-import { useGeoserverConfig } from '@/shared/context/geoserver-config/useGeoserverConfig'
 import Map, { NavigationControl, ScaleControl } from 'react-map-gl/maplibre'
 import mapLibregl from 'maplibre-gl'
 import { MapLayers } from './components/MapLayers'
+import { geoserverService } from '@/shared/providers'
 
 export const MapContainer = () => {
   const mapRef = useRef(null)
-  const { geoserverUrl } = useGeoserverConfig()
 
   const transformRequest: mapLibregl.RequestTransformFunction = (
     url,
@@ -17,9 +16,7 @@ export const MapContainer = () => {
       const sessionId = localStorage.getItem('session_id')
       const headers: Record<string, string> = {}
 
-      if (geoserverUrl) {
-        headers['X-GeoServer-BaseUrl'] = geoserverUrl
-      }
+      const defaultHeaders = geoserverService.getDefaultHeaders()
 
       if (sessionId) {
         headers['X-Session-Id'] = sessionId
@@ -27,7 +24,7 @@ export const MapContainer = () => {
 
       return {
         url,
-        headers,
+        headers: { ...defaultHeaders, ...headers },
       }
     }
 

@@ -50,7 +50,7 @@ export class GeoserverService {
     this.wmsCapabilitiesCachePromise = null
   }
 
-  private getDefaultHeaders = (includeCredentials?: boolean) => {
+  public getDefaultHeaders = (includeCredentials?: boolean) => {
     const headers: Record<string, string> = {}
     const geoserverUrl = this.configManager?.getGeoserverUrl() ?? null
     if (geoserverUrl) {
