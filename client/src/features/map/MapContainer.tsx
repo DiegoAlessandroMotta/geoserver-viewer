@@ -47,9 +47,8 @@ export const MapContainer = () => {
         mapStyle={config.mapStyle}
         style={{ width: '100dvw', height: '100dvh' }}
         transformRequest={transformRequest}
-        // preserveDrawingBuffer={true}
       >
-        <NavigationControl position="top-left" />
+        <NavigationControl position="top-right" />
         <ScaleControl position="bottom-left" maxWidth={100} unit="metric" />
         <CustomLayers />
       </Map>
