@@ -15,15 +15,25 @@ export const CustomLayers = () => {
         const tilesUrl = geoserverService.getVectorTileUrl(name)
 
         return (
-          <Source key={short} id={short} type="vector" tiles={[tilesUrl]} scheme="tms">
+          <Source
+            key={short}
+            id={short}
+            type="vector"
+            tiles={[tilesUrl]}
+            scheme="tms"
+          >
             <Layer
               key={name}
               id={name}
-              type={'fill'}
+              type="fill"
               source={short}
               source-layer={short}
               layout={{ visibility: layer.enabled ? 'visible' : 'none' }}
-              paint={{ 'fill-color': '#5c318c30' }}
+              paint={{
+                'fill-color': layer.color,
+                'fill-opacity': 0.4,
+                'fill-outline-color': '#000000',
+              }}
               minzoom={0}
               maxzoom={20}
             />

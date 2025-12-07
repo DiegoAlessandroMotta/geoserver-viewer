@@ -13,6 +13,7 @@ export interface LayerInfo {
   dateCreated?: string | null
   dateModified?: string | null
   enabled?: boolean
+  color?: string
 }
 
 export type LayerMap = Map<string, LayerInfo>

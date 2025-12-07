@@ -1,5 +1,6 @@
 import { XMLParser } from 'fast-xml-parser'
 import type { ILogger } from '@/shared/interfaces/logger.interface'
+import { generateSHA1HexHash, randomColorFromString } from '../lib/utils'
 
 interface GeoserverServiceOptions {
   proxyUrl: string
@@ -276,9 +277,10 @@ export class GeoserverService {
           const [layerWorkspace, ...nameParts] = layerName.split(':')
           const shortName = nameParts.join(':')
 
-          const [details, crs] = await Promise.all([
+          const [details, crs, hexHash] = await Promise.all([
             this.fetchLayerDetails(layerName),
             this.fetchLayerCRS(layerName, capabilities ?? undefined),
+            generateSHA1HexHash(layerName),
           ])
 
           if (!details?.layer) {
@@ -292,6 +294,7 @@ export class GeoserverService {
           const resourceInfo = this.parseResourceInfo(
             layer.resource?.href || layer.resource?.['@href'],
           )
+          const color = randomColorFromString(hexHash)
 
           return {
             name: layerName,
@@ -304,7 +307,8 @@ export class GeoserverService {
             dateCreated: layer.dateCreated,
             dateModified: layer.dateModified,
             defaultStyle: layer.defaultStyle?.name,
-            crs: crs,
+            crs,
+            color,
           }
         },
       )

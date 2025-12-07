@@ -63,6 +63,7 @@ export const LayerContextProvider = ({
               dateCreated: l.dateCreated,
               dateModified: l.dateModified,
               enabled: existing?.enabled ?? false,
+              color: l.color,
             })
           })
           return copy

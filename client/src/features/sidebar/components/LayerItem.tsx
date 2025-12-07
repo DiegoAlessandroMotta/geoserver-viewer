@@ -11,8 +11,8 @@ export const LayerItem = ({ layer, onToggle }: Props) => {
 
   return (
     <div
-      className="flex items-center gap-2 p-1 rounded-md border border-transparent hover:border-gray-200 overflow-hidden"
-      // style={{ borderColor: layer.color, borderWidth: 2 }}
+      className="flex items-center gap-2 p-1 rounded-md border overflow-hidden"
+      style={{ borderColor: layer.color, borderWidth: 2 }}
     >
       <label className="flex items-center cursor-pointer shrink-0">
         <input
