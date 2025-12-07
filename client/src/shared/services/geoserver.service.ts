@@ -318,16 +318,13 @@ export class GeoserverService {
       this.logger.debug({
         msg: `fetchWMSLayers: found ${detailedLayers.length} layers (workspace=${workspace})`,
       })
-      if (detailedLayers.length > 0)
+
+      if (detailedLayers.length > 0) {
         this.logger.debug({
           msg: 'layers',
-          data: detailedLayers.map((l) => ({
-            name: l.name,
-            workspace: l.workspace,
-            store: l.store,
-            crs: l.crs,
-          })),
+          data: detailedLayers,
         })
+      }
 
       return detailedLayers
     } catch (error) {
