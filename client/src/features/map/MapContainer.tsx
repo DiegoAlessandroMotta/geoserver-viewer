@@ -1,4 +1,4 @@
-import { config } from '@/shared/config'
+import { appConfig } from '@/shared/config'
 import { useRef } from 'react'
 import Map, { NavigationControl, ScaleControl } from 'react-map-gl/maplibre'
 import mapLibregl from 'maplibre-gl'
@@ -38,13 +38,13 @@ export const MapContainer = () => {
         ref={mapRef}
         attributionControl={false}
         initialViewState={{
-          latitude: config.mapCenter.lat,
-          longitude: config.mapCenter.lon,
-          zoom: config.mapZoom,
+          latitude: appConfig.mapCenter.lat,
+          longitude: appConfig.mapCenter.lon,
+          zoom: appConfig.mapZoom,
         }}
         mapLib={mapLibregl}
         interactive={true}
-        mapStyle={config.mapStyle}
+        mapStyle={appConfig.mapStyle}
         style={{ width: '100dvw', height: '100dvh' }}
         transformRequest={transformRequest}
       >

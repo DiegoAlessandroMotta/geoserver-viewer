@@ -1,10 +1,10 @@
 import { ConsoleLogger } from '@/shared/services/logger/console.logger'
 import { GeoserverService } from '@/shared/services/geoserver.service'
-import { config } from '@/shared/config'
+import { appConfig } from '@/shared/config'
 
 export const logger = new ConsoleLogger()
 
 export const geoserverService = new GeoserverService({
-  proxyUrl: config.proxyUrl,
+  proxyUrl: appConfig.proxyUrl,
   logger,
 })

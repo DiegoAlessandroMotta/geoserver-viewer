@@ -1,4 +1,4 @@
-import { config } from '@/shared/config'
+import { appConfig } from '@/shared/config'
 import type { LayerInfo } from '@/shared/context/layer/LayerContext'
 import { geoserverService } from '@/shared/providers'
 import { Layer, Source } from 'react-map-gl/maplibre'
@@ -35,8 +35,8 @@ export const CustomLayer = ({ layer }: Props) => {
           'fill-outline-color': outlineColor,
         }}
         filter={['==', '$type', 'Polygon']}
-        minzoom={config.mapMinZoom}
-        maxzoom={config.mapMaxZoom}
+        minzoom={appConfig.mapMinZoom}
+        maxzoom={appConfig.mapMaxZoom}
       />
 
       <Layer
@@ -52,8 +52,8 @@ export const CustomLayer = ({ layer }: Props) => {
           'line-opacity': 0.4,
         }}
         filter={['==', '$type', 'LineString']}
-        minzoom={config.mapMinZoom}
-        maxzoom={config.mapMaxZoom}
+        minzoom={appConfig.mapMinZoom}
+        maxzoom={appConfig.mapMaxZoom}
       />
 
       <Layer
@@ -71,8 +71,8 @@ export const CustomLayer = ({ layer }: Props) => {
           'circle-opacity': 0.4,
         }}
         filter={['==', '$type', 'Point']}
-        minzoom={config.mapMinZoom}
-        maxzoom={config.mapMaxZoom}
+        minzoom={appConfig.mapMinZoom}
+        maxzoom={appConfig.mapMaxZoom}
       />
     </Source>
   )
