@@ -14,6 +14,7 @@ export interface GeoserverConfigContextValue extends GeoserverConfig {
   getCredentials: () => GeoserverCredentials
   clearCredentials: () => void
   areCredentialsPersisted: () => boolean
+  credentials: GeoserverCredentials
 }
 
 export const GeoserverConfigContext =

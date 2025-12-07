@@ -17,6 +17,9 @@ export const GeoserverConfigProvider = ({
 
     return { geoserverUrl, workspace, sessionId }
   })
+  const [credentials, setCredentialsState] = useState(() =>
+    geoserverConfigService.getCredentials(),
+  )
 
   const setConfigFn = useCallback((cfg: Partial<GeoserverConfig>) => {
     geoserverConfigService.setConfig(cfg)
@@ -68,6 +71,12 @@ export const GeoserverConfigProvider = ({
           sessionId: change.sessionId ?? prev.sessionId,
         }))
       }
+      if (change.credentials !== undefined) {
+        setCredentialsState((_) => ({
+          username: change.credentials?.username ?? null,
+          password: change.credentials?.password ?? null,
+        }))
+      }
     })
 
     return () => unsubscribe()
@@ -84,10 +93,12 @@ export const GeoserverConfigProvider = ({
       getCredentials,
       clearCredentials,
       areCredentialsPersisted,
+      credentials,
     }),
     [
       config.geoserverUrl,
       config.workspace,
+      credentials,
       config.sessionId,
       setConfigFn,
       clearConfig,
