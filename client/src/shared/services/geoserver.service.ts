@@ -1,15 +1,18 @@
 import { XMLParser } from 'fast-xml-parser'
 import type { ILogger } from '@/shared/interfaces/logger.interface'
+import type { GeoserverConfigManagerService } from './geoserver-config-manager.service'
 import { generateSHA1HexHash, randomColorFromString } from '../lib/utils'
 
 interface GeoserverServiceOptions {
   proxyUrl: string
   logger: ILogger
+  configManager?: GeoserverConfigManagerService
 }
 
 export class GeoserverService {
   private readonly proxyUrl: string
   private readonly logger: ILogger
+  private readonly configManager?: GeoserverConfigManagerService
   private readonly xmlParser: XMLParser
   private wmsCapabilitiesCache: Record<string, any> | null = null
   private wmsCapabilitiesCachePromise: Promise<Record<
@@ -18,14 +21,23 @@ export class GeoserverService {
   > | null> | null = null
   private readonly MAX_CONCURRENT_REQUESTS = 6
 
-  constructor({ proxyUrl, logger }: GeoserverServiceOptions) {
+  constructor({ proxyUrl, logger, configManager }: GeoserverServiceOptions) {
     this.proxyUrl = proxyUrl
     this.logger = logger
+    this.configManager = configManager
     this.xmlParser = new XMLParser({
       ignoreAttributes: false,
       attributeNamePrefix: '@',
       textNodeName: '#text',
     })
+
+    if (this.configManager) {
+      this.configManager.onChange((change) => {
+        if (change.geoserverUrl !== undefined) {
+          this.invalidateCache()
+        }
+      })
+    }
   }
 
   public getVectorTileUrl = (layerName: string) => {
@@ -38,19 +50,21 @@ export class GeoserverService {
     this.wmsCapabilitiesCachePromise = null
   }
 
-  private getDefaultHeaders = () => {
+  private getDefaultHeaders = (includeCredentials?: boolean) => {
     const headers: Record<string, string> = {}
-
-    const geoserverUrl = localStorage.getItem('geoserver_base_url')
+    const geoserverUrl = this.configManager?.getGeoserverUrl() ?? null
     if (geoserverUrl) {
       headers['X-GeoServer-BaseUrl'] = geoserverUrl
     }
 
-    const username = localStorage.getItem('geoserver_username')
-    const password = localStorage.getItem('geoserver_password')
-    if (username && password) {
-      const credentials = btoa(`${username}:${password}`)
-      headers['Authorization'] = `Basic ${credentials}`
+    if (includeCredentials) {
+      const creds = this.configManager?.getCredentials?.() ?? null
+      const username = creds?.username
+      const password = creds?.password
+      if (username && password) {
+        const credentials = btoa(`${username}:${password}`)
+        headers['Authorization'] = `Basic ${credentials}`
+      }
     }
 
     return headers
@@ -98,7 +112,7 @@ export class GeoserverService {
       const base = this.getBaseUrl()
       const url = `${base}/rest/layers.json`
       const res = await fetch(url, {
-        headers: this.getDefaultHeaders(),
+        headers: this.getDefaultHeaders(true),
       })
 
       if (!res.ok) {
@@ -120,7 +134,7 @@ export class GeoserverService {
       const encodedName = layerName.replace(':', '%3A')
       const url = `${base}/rest/layers/${encodedName}.json`
       const res = await fetch(url, {
-        headers: this.getDefaultHeaders(),
+        headers: this.getDefaultHeaders(true),
       })
       if (!res.ok) {
         throw new Error(`Layer details fetch failed: ${res.status}`)
@@ -206,7 +220,7 @@ export class GeoserverService {
         const base = this.getBaseUrl()
         const url = `${base}/wms?service=WMS&version=1.3.0&request=GetCapabilities`
         const res = await fetch(url, {
-          headers: this.getDefaultHeaders(),
+          headers: this.getDefaultHeaders(true),
         })
         if (!res.ok) {
           this.logger.warn({

@@ -10,5 +10,3 @@ export const useGeoserverConfig = () => {
   }
   return ctx
 }
-
-export default useGeoserverConfig

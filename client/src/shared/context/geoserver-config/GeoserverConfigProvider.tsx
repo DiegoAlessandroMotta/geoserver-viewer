@@ -1,51 +1,93 @@
-import React, { useCallback, useMemo, useState } from 'react'
+import React, { useCallback, useEffect, useMemo, useState } from 'react'
 import { GeoserverConfigContext } from './GeoserverConfigContext'
+import { geoserverConfigService } from '@/shared/providers'
 import type { GeoserverConfig } from './GeoserverConfigContext'
-
-const LOCAL_STORAGE_URL_KEY = 'geoserver_base_url'
-const LOCAL_STORAGE_WORKSPACE_KEY = 'geoserver_workspace'
 
 export interface GeoserverConfigProviderProps {
   children?: React.ReactNode
 }
 
-export const GeoserverConfigProvider = ({ children }: GeoserverConfigProviderProps) => {
+export const GeoserverConfigProvider = ({
+  children,
+}: GeoserverConfigProviderProps) => {
   const [config, setConfig] = useState<GeoserverConfig>(() => {
-    const url = localStorage.getItem(LOCAL_STORAGE_URL_KEY) || null
-    const workspace = localStorage.getItem(LOCAL_STORAGE_WORKSPACE_KEY) || null
+    const url = geoserverConfigService.getGeoserverUrl() ?? null
+    const workspace = geoserverConfigService.getWorkspace() ?? null
     return { geoserverUrl: url, workspace }
   })
 
   const setGeoserverUrl = useCallback((url: string | null) => {
-    if (url == null) {
-      localStorage.removeItem(LOCAL_STORAGE_URL_KEY)
-    } else {
-      localStorage.setItem(LOCAL_STORAGE_URL_KEY, url)
-    }
+    geoserverConfigService.setGeoserverUrl(url)
     setConfig((prev) => ({ ...prev, geoserverUrl: url }))
   }, [])
 
   const setWorkspace = useCallback((workspace: string | null) => {
-    if (workspace == null) {
-      localStorage.removeItem(LOCAL_STORAGE_WORKSPACE_KEY)
-    } else {
-      localStorage.setItem(LOCAL_STORAGE_WORKSPACE_KEY, workspace)
-    }
+    geoserverConfigService.setWorkspace(workspace)
     setConfig((prev) => ({ ...prev, workspace }))
   }, [])
 
   const clearConfig = useCallback(() => {
-    localStorage.removeItem(LOCAL_STORAGE_URL_KEY)
-    localStorage.removeItem(LOCAL_STORAGE_WORKSPACE_KEY)
+    geoserverConfigService.setGeoserverUrl(null)
+    geoserverConfigService.setWorkspace(null)
     setConfig({ geoserverUrl: null, workspace: null })
   }, [])
 
-  const value = useMemo(
-    () => ({ geoserverUrl: config.geoserverUrl, workspace: config.workspace, setGeoserverUrl, setWorkspace, clearConfig }),
-    [config.geoserverUrl, config.workspace, setGeoserverUrl, setWorkspace, clearConfig],
+  const setCredentials = useCallback(
+    (
+      creds: { username: string | null; password: string | null },
+      persist?: boolean,
+    ) => {
+      geoserverConfigService.setCredentials(creds, persist)
+    },
+    [],
   )
 
-  return <GeoserverConfigContext.Provider value={value}>{children}</GeoserverConfigContext.Provider>
-}
+  const getCredentials = useCallback(() => {
+    return geoserverConfigService.getCredentials()
+  }, [])
 
-export default GeoserverConfigProvider
+  const clearCredentials = useCallback(() => {
+    geoserverConfigService.clearCredentials()
+  }, [])
+
+  useEffect(() => {
+    const unsubscribe = geoserverConfigService.onChange((change) => {
+      if (change.geoserverUrl !== undefined || change.workspace !== undefined) {
+        setConfig((prev) => ({
+          geoserverUrl: change.geoserverUrl ?? prev.geoserverUrl,
+          workspace: change.workspace ?? prev.workspace,
+        }))
+      }
+    })
+    return () => unsubscribe()
+  }, [])
+
+  const value = useMemo(
+    () => ({
+      geoserverUrl: config.geoserverUrl,
+      workspace: config.workspace,
+      setGeoserverUrl,
+      setWorkspace,
+      clearConfig,
+      setCredentials,
+      getCredentials,
+      clearCredentials,
+    }),
+    [
+      config.geoserverUrl,
+      config.workspace,
+      setGeoserverUrl,
+      setWorkspace,
+      clearConfig,
+      setCredentials,
+      getCredentials,
+      clearCredentials,
+    ],
+  )
+
+  return (
+    <GeoserverConfigContext.Provider value={value}>
+      {children}
+    </GeoserverConfigContext.Provider>
+  )
+}
