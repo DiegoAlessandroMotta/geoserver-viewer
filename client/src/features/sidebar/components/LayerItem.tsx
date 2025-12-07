@@ -1,4 +1,5 @@
 import type { LayerInfo } from '@/shared/context/layer/LayerContext'
+import { cn } from '@/shared/lib/utils'
 import { useState } from 'react'
 
 interface Props {
@@ -11,38 +12,46 @@ export const LayerItem = ({ layer, onToggle }: Props) => {
 
   return (
     <div
-      className="flex items-center gap-2 p-1 rounded-md border overflow-hidden"
-      style={{ borderColor: layer.color, borderWidth: 2 }}
+      className="flex items-center rounded-md overflow-hidden"
+      style={{
+        backgroundColor: `${layer.color}22`,
+        borderColor: layer.color,
+        borderStyle: 'solid',
+        borderWidth: 1,
+      }}
     >
-      <label className="flex items-center cursor-pointer shrink-0">
+      <label className="flex items-center cursor-pointer shrink-0 pl-2 py-2 pr-2">
         <input
           type="checkbox"
           checked={layer.enabled}
           onChange={() => onToggle()}
           title={layer.enabled ? 'Ocultar capa' : 'Mostrar capa'}
-          className="w-4 h-4 cursor-pointer accent-blue-500"
+          className="w-4 h-4 cursor-pointer"
+          style={{ accentColor: layer.color }}
         />
       </label>
 
       <div className="flex flex-col w-full">
         <div className="flex items-center justify-between gap-2">
-          <p
-            className="text-sm font-medium text-gray-800 truncate flex-1 max-w-44"
+          <span
+            className="text-sm font-medium text-gray-800 truncate flex-1 max-w-44 py-2 cursor-pointer"
             onClick={() => onToggle()}
           >
             {layer.short}
-          </p>
+          </span>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
-            className="shrink-0 px-3 py-2 text-xs font-semibold text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded"
-            title={isExpanded ? 'Contraer detalles' : 'Expandir detalles'}
+            className={cn(
+              `shrink-0 aspect-square w-8 font-semibold rounded text-gray-800 cursor-pointer hover:bg-black/10 mr-0.5`,
+            )}
+            title={isExpanded ? 'Mostrar detalles' : 'Ocultar detalles'}
           >
             {isExpanded ? '▼' : '▶'}
           </button>
         </div>
 
         {isExpanded && (
-          <div className="text-xs text-gray-600 mt-2 space-y-1">
+          <div className="text-xs text-gray-800 space-y-1 pb-1 border-t border-gray-400 mr-1">
             {layer.workspace && (
               <p className="truncate">
                 <span className="font-semibold">Workspace:</span>{' '}
