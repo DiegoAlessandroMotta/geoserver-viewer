@@ -1,4 +1,11 @@
-import { useCallback, useContext, useEffect, useMemo, useState, useRef } from 'react'
+import {
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+  useRef,
+} from 'react'
 import { LayerContext } from './LayerContext'
 import type { LayerInfo } from './LayerContext'
 import { geoserverService, logger } from '@/shared/providers'
@@ -6,16 +13,15 @@ import { GeoserverConfigContext } from '@/shared/context/geoserver-config/Geoser
 
 interface LayerContextProviderProps {
   children?: React.ReactNode
-  workspace?: string
 }
 
 export const LayerContextProvider = ({
   children,
-  workspace,
 }: LayerContextProviderProps) => {
   const geoserverConfig = useContext(GeoserverConfigContext)
   const configWorkspace = geoserverConfig?.workspace ?? undefined
   const geoserverUrl = geoserverConfig?.geoserverUrl ?? undefined
+  const configCredentials = geoserverConfig?.credentials
   const [layersMap, setLayersMap] = useState<Map<string, LayerInfo>>(new Map())
   const mountedRef = useRef(true)
 
@@ -45,55 +51,73 @@ export const LayerContextProvider = ({
     })
   }, [])
 
-  const refreshLayers = useCallback(
-    async (workspaceArg?: string) => {
-      const ws = workspaceArg || workspace
-      try {
-        const rawLayers = await geoserverService.fetchWMSLayers(ws ?? '')
-        if (!mountedRef.current) return
+  const refreshLayers = useCallback(async () => {
+    try {
+      logger.debug({
+        msg: 'LayerContextProvider.refreshLayers: starting refresh',
+      })
 
-        setLayersMap((prev) => {
-          const copy = new Map(prev)
-          rawLayers.forEach((l: any) => {
-            const name = l.name || l.fullName || l.title
-            const existing = copy.get(name)
-            copy.set(name, {
-              name,
-              short: l.short,
-              title: l.title,
-              workspace: l.workspace,
-              store: l.store,
-              type: l.type,
-              fullName: l.name,
-              defaultStyle: l.defaultStyle,
-              crs: l.crs,
-              dateCreated: l.dateCreated,
-              dateModified: l.dateModified,
-              enabled: existing?.enabled ?? false,
-              color: l.color,
-            })
-          })
-          return copy
+      if (!mountedRef.current) {
+        logger.debug({
+          msg: 'LayerContextProvider.refreshLayers: mountedRef not found, skipping refresh',
         })
-      } catch (error) {
-        logger.warn({
-          msg: 'LayerContextProvider.refreshLayers: could not fetch layers',
-          error,
-        })
+        return
       }
-    },
-    [workspace],
-  )
+
+      const rawLayers = await geoserverService.fetchWMSLayers(
+        configWorkspace ?? '',
+      )
+
+      const newLayers = new Map()
+
+      rawLayers.forEach((l) => {
+        const name = l.name || l.title || l.short
+
+        newLayers.set(name, {
+          name,
+          short: l.short,
+          title: l.title,
+          workspace: l.workspace,
+          store: l.store,
+          type: l.type,
+          fullName: l.name,
+          defaultStyle: l.defaultStyle,
+          crs: l.crs,
+          dateCreated: l.dateCreated,
+          dateModified: l.dateModified,
+          enabled: false,
+          color: l.color,
+        })
+      })
+
+      setLayersMap(newLayers)
+    } catch (error) {
+      logger.warn({
+        msg: 'LayerContextProvider.refreshLayers: could not fetch layers',
+        error,
+      })
+      setLayersMap(new Map())
+    }
+  }, [configWorkspace])
 
   useEffect(() => {
     mountedRef.current = true
+    logger.debug({
+      msg: 'LayerContextProvider: configuration changed, invalidating cache and clearing layers',
+    })
     geoserverService.invalidateCache()
-    const effectiveWorkspace = workspace ?? configWorkspace
-    Promise.resolve().then(() => refreshLayers(effectiveWorkspace))
+    Promise.resolve().then(() => refreshLayers())
+
     return () => {
       mountedRef.current = false
     }
-  }, [refreshLayers, workspace, configWorkspace, geoserverUrl])
+  }, [
+    refreshLayers,
+    configWorkspace,
+    geoserverUrl,
+    configCredentials?.username,
+    configCredentials?.password,
+  ])
 
   const value = useMemo(
     () => ({
