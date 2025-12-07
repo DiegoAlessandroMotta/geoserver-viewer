@@ -14,7 +14,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
       <section
         ref={ref}
         className={cn(
-          'bg-white shadow rounded-lg p-2 border-2 border-blue-400',
+          'bg-white shadow rounded-lg border-2 border-blue-400',
           className,
         )}
         {...rest}
