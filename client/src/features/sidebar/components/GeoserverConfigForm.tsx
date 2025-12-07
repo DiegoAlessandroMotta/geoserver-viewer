@@ -117,6 +117,16 @@ export const GeoserverConfigForm = () => {
                 />
               </label>
             </div>
+
+            <label className="text-xs text-gray-700 select-none font-semibold flex gap-1">
+              <input
+                type="checkbox"
+                checked={persistCredentials}
+                onChange={(e) => setPersistCredentials(e.target.checked)}
+                className="h-4 w-4 accent-blue-600"
+              />
+              Recordar credenciales
+            </label>
           </div>
 
           <div className="flex gap-2">

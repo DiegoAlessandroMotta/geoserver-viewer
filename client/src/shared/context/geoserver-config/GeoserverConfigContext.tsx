@@ -4,7 +4,7 @@ import type { GeoserverCredentials } from '@/shared/services/geoserver-config-ma
 export interface GeoserverConfig {
   geoserverUrl: string | null
   workspace: string | null
-  sessionId?: string | null
+  sessionId?: string
 }
 
 export interface GeoserverConfigContextValue extends GeoserverConfig {

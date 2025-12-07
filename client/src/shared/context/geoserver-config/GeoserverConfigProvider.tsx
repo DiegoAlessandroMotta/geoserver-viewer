@@ -13,25 +13,13 @@ export const GeoserverConfigProvider = ({
   const [config, setConfig] = useState<GeoserverConfig>(() => {
     const geoserverUrl = geoserverConfigService.getGeoserverUrl()
     const workspace = geoserverConfigService.getWorkspace()
-    const sessionId =
-      geoserverConfigService.getSessionId() ?? crypto.randomUUID()
+    const sessionId = geoserverConfigService.getSessionId()
 
     return { geoserverUrl, workspace, sessionId }
   })
 
   const setConfigFn = useCallback((cfg: Partial<GeoserverConfig>) => {
-    if (cfg.geoserverUrl !== undefined) {
-      geoserverConfigService.setGeoserverUrl(cfg.geoserverUrl)
-    }
-
-    if (cfg.workspace !== undefined) {
-      geoserverConfigService.setWorkspace(cfg.workspace)
-    }
-
-    if (cfg.sessionId !== undefined) {
-      geoserverConfigService.setSessionId(cfg.sessionId)
-    }
-
+    geoserverConfigService.setConfig(cfg)
     setConfig((prev) => ({
       geoserverUrl:
         cfg.geoserverUrl !== undefined ? cfg.geoserverUrl : prev.geoserverUrl,
@@ -41,7 +29,7 @@ export const GeoserverConfigProvider = ({
   }, [])
 
   const clearConfig = useCallback(() => {
-    setConfig({ geoserverUrl: null, workspace: null, sessionId: null })
+    setConfig({ geoserverUrl: null, workspace: null })
   }, [])
 
   const setCredentials = useCallback(
