@@ -1,15 +1,48 @@
 import { useState } from 'react'
 import { Card } from './Card'
 import { Button } from '@/shared/components/Button'
+import { useGeoserverConfig } from '@/shared/context/geoserver-config/useGeoserverConfig'
 
 export const GeoserverConfigForm = () => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const {
+    geoserverUrl,
+    workspace,
+    setConfig,
+    setCredentials,
+    clearConfig,
+    clearCredentials,
+  } = useGeoserverConfig()
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  const [url, setUrl] = useState(geoserverUrl ?? '')
+  const [ws, setWs] = useState(workspace ?? '')
+  const [username, setUsername] = useState('')
+  const [password, setPassword] = useState('')
+  const [persistCredentials, setPersistCredentials] = useState(false)
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
+    setConfig({ geoserverUrl: url || null, workspace: ws || null })
+
+    setCredentials(
+      { username: username || null, password: password || null },
+      persistCredentials,
+    )
+
+    setUsername('')
+    setPassword('')
   }
 
-  const handleClear = () => {}
+  const handleClear = () => {
+    clearConfig()
+    clearCredentials()
+    setUrl('')
+    setWs('')
+    setUsername('')
+    setPassword('')
+    setPersistCredentials(false)
+  }
 
   return (
     <Card>
@@ -38,6 +71,8 @@ export const GeoserverConfigForm = () => {
                 URL de GeoServer:
                 <input
                   type="url"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
                   placeholder="http://localhost:8080/geoserver"
                   className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
@@ -49,6 +84,8 @@ export const GeoserverConfigForm = () => {
                 Workspace:
                 <input
                   type="text"
+                  value={ws}
+                  onChange={(e) => setWs(e.target.value)}
                   placeholder="geoserver_workspace"
                   className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
@@ -60,6 +97,8 @@ export const GeoserverConfigForm = () => {
                 Usuario:
                 <input
                   type="text"
+                  value={username}
+                  onChange={(e) => setUsername(e.target.value)}
                   placeholder="geo_user"
                   className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
@@ -71,6 +110,8 @@ export const GeoserverConfigForm = () => {
                 Contraseña:
                 <input
                   type="password"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
                   placeholder="geo_password"
                   className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
@@ -80,14 +121,6 @@ export const GeoserverConfigForm = () => {
 
           <div className="flex gap-2">
             <Button
-              type="submit"
-              variant="primary"
-              size="sm"
-              className="grow font-semibold"
-            >
-              Actualizar
-            </Button>
-            <Button
               type="button"
               onClick={handleClear}
               variant="danger"
@@ -95,6 +128,14 @@ export const GeoserverConfigForm = () => {
               className="grow font-semibold"
             >
               Limpiar
+            </Button>
+            <Button
+              type="submit"
+              variant="primary"
+              size="sm"
+              className="grow font-semibold"
+            >
+              Guardar
             </Button>
           </div>
         </form>
