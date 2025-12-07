@@ -9,6 +9,7 @@ export type GeoserverConfigChange = Partial<{
   geoserverUrl: string | null
   workspace: string | null
   credentials: GeoserverCredentials
+  sessionId: string | null
 }>
 
 export type GeoserverConfigChangeListener = (
@@ -19,9 +20,11 @@ const LOCAL_STORAGE_URL_KEY = 'geoserver_base_url'
 const LOCAL_STORAGE_WORKSPACE_KEY = 'geoserver_workspace'
 const LOCAL_STORAGE_USERNAME_KEY = 'geoserver_username'
 const LOCAL_STORAGE_PASSWORD_KEY = 'geoserver_password'
+const LOCAL_STORAGE_SESSION_KEY = 'session_id'
 
 export interface GeoserverConfigManagerOptions {
   persistCredentials?: boolean
+  persistSession?: boolean
   storage?: Storage
   logger: ILogger
 }
@@ -30,16 +33,19 @@ export class GeoserverConfigManagerService {
   private readonly storage: Storage
   private readonly logger: ILogger
   private readonly persistCredentials: boolean
+  private readonly persistSession: boolean
   private readonly listeners: Set<GeoserverConfigChangeListener>
   private credentials: GeoserverCredentials
 
   constructor({
     storage,
     persistCredentials,
+    persistSession,
     logger,
   }: GeoserverConfigManagerOptions) {
     this.storage = storage ?? localStorage
     this.persistCredentials = persistCredentials ?? false
+    this.persistSession = persistSession ?? false
     this.listeners = new Set()
     this.logger = logger
 
@@ -74,6 +80,29 @@ export class GeoserverConfigManagerService {
     if (workspace == null) this.storage.removeItem(LOCAL_STORAGE_WORKSPACE_KEY)
     else this.storage.setItem(LOCAL_STORAGE_WORKSPACE_KEY, workspace)
     this.emitChange({ workspace })
+  }
+
+  public getSessionId = (): string | null => {
+    return this.storage.getItem(LOCAL_STORAGE_SESSION_KEY) ?? null
+  }
+
+  public setSessionId = (sessionId: string | null) => {
+    if (this.persistSession) {
+      if (sessionId == null) {
+        this.storage.removeItem(LOCAL_STORAGE_SESSION_KEY)
+      } else {
+        this.storage.setItem(LOCAL_STORAGE_SESSION_KEY, sessionId)
+      }
+    }
+
+    this.emitChange({ sessionId })
+  }
+
+  public clearSessionId = () => {
+    if (this.persistSession) {
+      this.storage.removeItem(LOCAL_STORAGE_SESSION_KEY)
+    }
+    this.emitChange({ sessionId: null })
   }
 
   public getCredentials = (): GeoserverCredentials => {

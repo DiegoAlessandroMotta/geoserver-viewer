@@ -4,11 +4,11 @@ import type { GeoserverCredentials } from '@/shared/services/geoserver-config-ma
 export interface GeoserverConfig {
   geoserverUrl: string | null
   workspace: string | null
+  sessionId?: string | null
 }
 
 export interface GeoserverConfigContextValue extends GeoserverConfig {
-  setGeoserverUrl: (url: string | null) => void
-  setWorkspace: (workspace: string | null) => void
+  setConfig: (cfg: Partial<GeoserverConfig>) => void
   clearConfig: () => void
   setCredentials: (creds: GeoserverCredentials, persist?: boolean) => void
   getCredentials: () => GeoserverCredentials

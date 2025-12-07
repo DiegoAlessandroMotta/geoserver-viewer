@@ -11,25 +11,37 @@ export const GeoserverConfigProvider = ({
   children,
 }: GeoserverConfigProviderProps) => {
   const [config, setConfig] = useState<GeoserverConfig>(() => {
-    const url = geoserverConfigService.getGeoserverUrl() ?? null
-    const workspace = geoserverConfigService.getWorkspace() ?? null
-    return { geoserverUrl: url, workspace }
+    const geoserverUrl = geoserverConfigService.getGeoserverUrl()
+    const workspace = geoserverConfigService.getWorkspace()
+    const sessionId =
+      geoserverConfigService.getSessionId() ?? crypto.randomUUID()
+
+    return { geoserverUrl, workspace, sessionId }
   })
 
-  const setGeoserverUrl = useCallback((url: string | null) => {
-    geoserverConfigService.setGeoserverUrl(url)
-    setConfig((prev) => ({ ...prev, geoserverUrl: url }))
-  }, [])
+  const setConfigFn = useCallback((cfg: Partial<GeoserverConfig>) => {
+    if (cfg.geoserverUrl !== undefined) {
+      geoserverConfigService.setGeoserverUrl(cfg.geoserverUrl)
+    }
 
-  const setWorkspace = useCallback((workspace: string | null) => {
-    geoserverConfigService.setWorkspace(workspace)
-    setConfig((prev) => ({ ...prev, workspace }))
+    if (cfg.workspace !== undefined) {
+      geoserverConfigService.setWorkspace(cfg.workspace)
+    }
+
+    if (cfg.sessionId !== undefined) {
+      geoserverConfigService.setSessionId(cfg.sessionId)
+    }
+
+    setConfig((prev) => ({
+      geoserverUrl:
+        cfg.geoserverUrl !== undefined ? cfg.geoserverUrl : prev.geoserverUrl,
+      workspace: cfg.workspace !== undefined ? cfg.workspace : prev.workspace,
+      sessionId: cfg.sessionId !== undefined ? cfg.sessionId : prev.sessionId,
+    }))
   }, [])
 
   const clearConfig = useCallback(() => {
-    geoserverConfigService.setGeoserverUrl(null)
-    geoserverConfigService.setWorkspace(null)
-    setConfig({ geoserverUrl: null, workspace: null })
+    setConfig({ geoserverUrl: null, workspace: null, sessionId: null })
   }, [])
 
   const setCredentials = useCallback(
@@ -52,13 +64,19 @@ export const GeoserverConfigProvider = ({
 
   useEffect(() => {
     const unsubscribe = geoserverConfigService.onChange((change) => {
-      if (change.geoserverUrl !== undefined || change.workspace !== undefined) {
+      if (
+        change.geoserverUrl !== undefined ||
+        change.workspace !== undefined ||
+        change.sessionId !== undefined
+      ) {
         setConfig((prev) => ({
           geoserverUrl: change.geoserverUrl ?? prev.geoserverUrl,
           workspace: change.workspace ?? prev.workspace,
+          sessionId: change.sessionId ?? prev.sessionId,
         }))
       }
     })
+
     return () => unsubscribe()
   }, [])
 
@@ -66,8 +84,8 @@ export const GeoserverConfigProvider = ({
     () => ({
       geoserverUrl: config.geoserverUrl,
       workspace: config.workspace,
-      setGeoserverUrl,
-      setWorkspace,
+      sessionId: config.sessionId,
+      setConfig: setConfigFn,
       clearConfig,
       setCredentials,
       getCredentials,
@@ -76,8 +94,8 @@ export const GeoserverConfigProvider = ({
     [
       config.geoserverUrl,
       config.workspace,
-      setGeoserverUrl,
-      setWorkspace,
+      config.sessionId,
+      setConfigFn,
       clearConfig,
       setCredentials,
       getCredentials,

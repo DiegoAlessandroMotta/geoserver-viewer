@@ -6,13 +6,13 @@ import { generateSHA1HexHash, randomColorFromString } from '../lib/utils'
 interface GeoserverServiceOptions {
   proxyUrl: string
   logger: ILogger
-  configManager?: GeoserverConfigManagerService
+  configManager: GeoserverConfigManagerService
 }
 
 export class GeoserverService {
   private readonly proxyUrl: string
   private readonly logger: ILogger
-  private readonly configManager?: GeoserverConfigManagerService
+  private readonly configManager: GeoserverConfigManagerService
   private readonly xmlParser: XMLParser
   private wmsCapabilitiesCache: Record<string, any> | null = null
   private wmsCapabilitiesCachePromise: Promise<Record<
@@ -31,13 +31,11 @@ export class GeoserverService {
       textNodeName: '#text',
     })
 
-    if (this.configManager) {
-      this.configManager.onChange((change) => {
-        if (change.geoserverUrl !== undefined) {
-          this.invalidateCache()
-        }
-      })
-    }
+    this.configManager.onChange((change) => {
+      if (change.geoserverUrl != null || change.workspace != null) {
+        this.invalidateCache()
+      }
+    })
   }
 
   public getVectorTileUrl = (layerName: string) => {
@@ -52,19 +50,22 @@ export class GeoserverService {
 
   public getDefaultHeaders = (includeCredentials?: boolean) => {
     const headers: Record<string, string> = {}
-    const geoserverUrl = this.configManager?.getGeoserverUrl() ?? null
+    const geoserverUrl = this.configManager.getGeoserverUrl() ?? null
     if (geoserverUrl) {
       headers['X-GeoServer-BaseUrl'] = geoserverUrl
     }
 
     if (includeCredentials) {
-      const creds = this.configManager?.getCredentials?.() ?? null
-      const username = creds?.username
-      const password = creds?.password
+      const { username, password } = this.configManager.getCredentials()
       if (username && password) {
         const credentials = btoa(`${username}:${password}`)
         headers['Authorization'] = `Basic ${credentials}`
       }
+    }
+
+    const sessionId = this.configManager.getSessionId()
+    if (sessionId) {
+      headers['X-Session-Id'] = sessionId
     }
 
     return headers

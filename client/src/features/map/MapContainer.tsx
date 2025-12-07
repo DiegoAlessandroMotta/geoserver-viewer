@@ -13,18 +13,9 @@ export const MapContainer = () => {
     _resourceType,
   ) => {
     if (url.includes('/geoserver/')) {
-      const sessionId = localStorage.getItem('session_id')
-      const headers: Record<string, string> = {}
-
-      const defaultHeaders = geoserverService.getDefaultHeaders()
-
-      if (sessionId) {
-        headers['X-Session-Id'] = sessionId
-      }
-
       return {
         url,
-        headers: { ...defaultHeaders, ...headers },
+        headers: geoserverService.getDefaultHeaders(),
       }
     }
 
