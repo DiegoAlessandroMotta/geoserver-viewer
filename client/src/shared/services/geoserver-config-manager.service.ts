@@ -22,7 +22,6 @@ const LOCAL_STORAGE_USERNAME_KEY = 'geoserver_username'
 const LOCAL_STORAGE_PASSWORD_KEY = 'geoserver_password'
 
 export interface GeoserverConfigManagerOptions {
-  persistCredentials?: boolean
   storage?: Storage
   logger: ILogger
 }
@@ -37,29 +36,26 @@ export class GeoserverConfigManagerService {
   private workspace: string | null
   private sessionId: string
 
-  constructor({
-    storage,
-    persistCredentials,
-    logger,
-  }: GeoserverConfigManagerOptions) {
+  constructor({ storage, logger }: GeoserverConfigManagerOptions) {
     this.storage = storage ?? localStorage
-    this.persistCredentials = persistCredentials ?? false
+    const storedUsername = this.storage.getItem(LOCAL_STORAGE_USERNAME_KEY)
+    const storedPassword = this.storage.getItem(LOCAL_STORAGE_PASSWORD_KEY)
+    const hasStoredCreds = Boolean(storedUsername || storedPassword)
+    this.persistCredentials = hasStoredCreds
     this.listeners = new Set()
     this.logger = logger
 
+    this.geoserverUrl = this.storage.getItem(LOCAL_STORAGE_URL_KEY) ?? null
+    this.workspace = this.storage.getItem(LOCAL_STORAGE_WORKSPACE_KEY) ?? null
+    this.sessionId = crypto.randomUUID()
     this.credentials = {
       username: null,
       password: null,
     }
-    this.geoserverUrl = this.storage.getItem(LOCAL_STORAGE_URL_KEY) ?? null
-    this.workspace = this.storage.getItem(LOCAL_STORAGE_WORKSPACE_KEY) ?? null
-    this.sessionId = crypto.randomUUID()
 
     if (this.persistCredentials) {
-      const username = this.storage.getItem(LOCAL_STORAGE_USERNAME_KEY)
-      const password = this.storage.getItem(LOCAL_STORAGE_PASSWORD_KEY)
-      this.credentials.username = username ?? null
-      this.credentials.password = password ?? null
+      this.credentials.username = storedUsername ?? null
+      this.credentials.password = storedPassword ?? null
     }
   }
 
@@ -93,6 +89,7 @@ export class GeoserverConfigManagerService {
     }>,
   ) => {
     const emitted: any = {}
+
     if (cfg.geoserverUrl !== undefined) {
       if (cfg.geoserverUrl == null)
         this.storage.removeItem(LOCAL_STORAGE_URL_KEY)
@@ -100,6 +97,7 @@ export class GeoserverConfigManagerService {
       this.geoserverUrl = cfg.geoserverUrl ?? null
       emitted.geoserverUrl = cfg.geoserverUrl ?? null
     }
+
     if (cfg.workspace !== undefined) {
       if (cfg.workspace == null)
         this.storage.removeItem(LOCAL_STORAGE_WORKSPACE_KEY)
@@ -107,11 +105,15 @@ export class GeoserverConfigManagerService {
       this.workspace = cfg.workspace ?? null
       emitted.workspace = cfg.workspace ?? null
     }
+
     if (cfg.sessionId !== undefined) {
       this.sessionId = cfg.sessionId
       emitted.sessionId = cfg.sessionId ?? null
     }
-    if (Object.keys(emitted).length > 0) this.emitChange(emitted)
+
+    if (Object.keys(emitted).length > 0) {
+      this.emitChange(emitted)
+    }
   }
 
   public getSessionId = (): string => {
@@ -127,13 +129,18 @@ export class GeoserverConfigManagerService {
     return { ...this.credentials }
   }
 
+  public areCredentialsPersisted = (): boolean => {
+    return this.persistCredentials
+  }
+
   public setCredentials = (creds: GeoserverCredentials, persist?: boolean) => {
     this.credentials = {
       username: creds.username ?? null,
       password: creds.password ?? null,
     }
 
-    if (persist ?? this.persistCredentials) {
+    const willPersist = persist ?? this.persistCredentials
+    if (willPersist) {
       if (creds.username == null)
         this.storage.removeItem(LOCAL_STORAGE_USERNAME_KEY)
       else this.storage.setItem(LOCAL_STORAGE_USERNAME_KEY, creds.username)
@@ -141,6 +148,9 @@ export class GeoserverConfigManagerService {
       if (creds.password == null)
         this.storage.removeItem(LOCAL_STORAGE_PASSWORD_KEY)
       else this.storage.setItem(LOCAL_STORAGE_PASSWORD_KEY, creds.password)
+    } else {
+      this.storage.removeItem(LOCAL_STORAGE_USERNAME_KEY)
+      this.storage.removeItem(LOCAL_STORAGE_PASSWORD_KEY)
     }
 
     this.emitChange({ credentials: { ...this.credentials } })
@@ -148,10 +158,8 @@ export class GeoserverConfigManagerService {
 
   public clearCredentials = () => {
     this.credentials = { username: null, password: null }
-    if (this.persistCredentials) {
-      this.storage.removeItem(LOCAL_STORAGE_USERNAME_KEY)
-      this.storage.removeItem(LOCAL_STORAGE_PASSWORD_KEY)
-    }
+    this.storage.removeItem(LOCAL_STORAGE_USERNAME_KEY)
+    this.storage.removeItem(LOCAL_STORAGE_PASSWORD_KEY)
     this.emitChange({ credentials: { ...this.credentials } })
   }
 

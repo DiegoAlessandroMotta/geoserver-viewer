@@ -29,8 +29,9 @@ export const GeoserverConfigProvider = ({
   }, [])
 
   const clearConfig = useCallback(() => {
-    setConfig({ geoserverUrl: null, workspace: null })
-  }, [])
+    setConfigFn({ geoserverUrl: null, workspace: null })
+    geoserverConfigService.clearCredentials()
+  }, [setConfigFn])
 
   const setCredentials = useCallback(
     (
@@ -48,6 +49,10 @@ export const GeoserverConfigProvider = ({
 
   const clearCredentials = useCallback(() => {
     geoserverConfigService.clearCredentials()
+  }, [])
+
+  const areCredentialsPersisted = useCallback(() => {
+    return geoserverConfigService.areCredentialsPersisted()
   }, [])
 
   useEffect(() => {
@@ -78,6 +83,7 @@ export const GeoserverConfigProvider = ({
       setCredentials,
       getCredentials,
       clearCredentials,
+      areCredentialsPersisted,
     }),
     [
       config.geoserverUrl,
@@ -88,6 +94,7 @@ export const GeoserverConfigProvider = ({
       setCredentials,
       getCredentials,
       clearCredentials,
+      areCredentialsPersisted,
     ],
   )
 

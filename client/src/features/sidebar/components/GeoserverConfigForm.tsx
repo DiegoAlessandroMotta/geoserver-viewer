@@ -12,21 +12,30 @@ export const GeoserverConfigForm = () => {
     setCredentials,
     clearConfig,
     clearCredentials,
+    getCredentials,
+    areCredentialsPersisted,
   } = useGeoserverConfig()
 
   const [url, setUrl] = useState(geoserverUrl ?? '')
   const [ws, setWs] = useState(workspace ?? '')
   const [username, setUsername] = useState('')
   const [password, setPassword] = useState('')
-  const [persistCredentials, setPersistCredentials] = useState(false)
+  const [persistCredentials, setPersistCredentials] = useState(() =>
+    areCredentialsPersisted(),
+  )
+
+  const savedCreds = getCredentials()
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
 
-    setConfig({ geoserverUrl: url || null, workspace: ws || null })
+    setConfig({
+      geoserverUrl: url.trim() || null,
+      workspace: ws.trim() || null,
+    })
 
     setCredentials(
-      { username: username || null, password: password || null },
+      { username: username.trim() || null, password: password.trim() || null },
       persistCredentials,
     )
 
@@ -94,7 +103,10 @@ export const GeoserverConfigForm = () => {
 
             <div>
               <label className="text-xs font-semibold text-gray-700 block mb-1">
-                Usuario:
+                Usuario:{' '}
+                {savedCreds.username != null && (
+                  <span className="text-xs text-green-600">(guardado)</span>
+                )}
                 <input
                   type="text"
                   value={username}
@@ -107,7 +119,10 @@ export const GeoserverConfigForm = () => {
 
             <div>
               <label className="text-xs font-semibold text-gray-700 block mb-1">
-                Contraseña:
+                Contraseña:{' '}
+                {savedCreds.password != null && (
+                  <span className="text-xs text-green-600">(guardado)</span>
+                )}
                 <input
                   type="password"
                   value={password}
