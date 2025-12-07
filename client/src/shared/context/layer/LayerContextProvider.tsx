@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
 import { LayerContext } from './LayerContext'
 import type { LayerInfo } from './LayerContext'
 import { geoserverService, logger } from '@/shared/providers'
@@ -13,6 +13,7 @@ export const LayerContextProvider = ({
   workspace,
 }: LayerContextProviderProps) => {
   const [layersMap, setLayersMap] = useState<Map<string, LayerInfo>>(new Map())
+  const mountedRef = useRef(true)
 
   const setLayerEnabled = useCallback((layerName: string, enabled: boolean) => {
     setLayersMap((prev) => {
@@ -45,6 +46,8 @@ export const LayerContextProvider = ({
       const ws = workspaceArg || workspace
       try {
         const rawLayers = await geoserverService.fetchWMSLayers(ws ?? '')
+        if (!mountedRef.current) return
+
         setLayersMap((prev) => {
           const copy = new Map(prev)
           rawLayers.forEach((l: any) => {
@@ -79,7 +82,11 @@ export const LayerContextProvider = ({
   )
 
   useEffect(() => {
-    refreshLayers(workspace)
+    mountedRef.current = true
+    Promise.resolve().then(() => refreshLayers(workspace))
+    return () => {
+      mountedRef.current = false
+    }
   }, [refreshLayers, workspace])
 
   const value = useMemo(
