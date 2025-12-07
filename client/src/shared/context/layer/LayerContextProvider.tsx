@@ -1,7 +1,8 @@
-import { useCallback, useEffect, useMemo, useState, useRef } from 'react'
+import { useCallback, useContext, useEffect, useMemo, useState, useRef } from 'react'
 import { LayerContext } from './LayerContext'
 import type { LayerInfo } from './LayerContext'
 import { geoserverService, logger } from '@/shared/providers'
+import { GeoserverConfigContext } from '@/shared/context/geoserver-config/GeoserverConfigContext'
 
 interface LayerContextProviderProps {
   children?: React.ReactNode
@@ -12,6 +13,9 @@ export const LayerContextProvider = ({
   children,
   workspace,
 }: LayerContextProviderProps) => {
+  const geoserverConfig = useContext(GeoserverConfigContext)
+  const configWorkspace = geoserverConfig?.workspace ?? undefined
+  const geoserverUrl = geoserverConfig?.geoserverUrl ?? undefined
   const [layersMap, setLayersMap] = useState<Map<string, LayerInfo>>(new Map())
   const mountedRef = useRef(true)
 
@@ -83,11 +87,13 @@ export const LayerContextProvider = ({
 
   useEffect(() => {
     mountedRef.current = true
-    Promise.resolve().then(() => refreshLayers(workspace))
+    geoserverService.invalidateCache()
+    const effectiveWorkspace = workspace ?? configWorkspace
+    Promise.resolve().then(() => refreshLayers(effectiveWorkspace))
     return () => {
       mountedRef.current = false
     }
-  }, [refreshLayers, workspace])
+  }, [refreshLayers, workspace, configWorkspace, geoserverUrl])
 
   const value = useMemo(
     () => ({
