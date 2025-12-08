@@ -13,13 +13,18 @@ export const SidebarContainer = () => {
       <Card className="max-h-full min-h-fit flex flex-col py-2">
         <header className="mb-2 px-2">
           <div className="flex justify-between items-center mb-1">
-            <h2 className="text-lg font-bold text-gray-800">Capas</h2>
-            <Button variant="ghost" size="sm" onClick={() => refreshLayers()}>
+            <h2 className="font-semibold text-gray-800">Capas</h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => refreshLayers()}
+              className="font-semibold"
+            >
               Actualizar
             </Button>
           </div>
 
-          <Button className="w-full">Mostrar logs</Button>
+          <Button fullWidth>Mostrar logs</Button>
         </header>
 
         <LayerToggleList />

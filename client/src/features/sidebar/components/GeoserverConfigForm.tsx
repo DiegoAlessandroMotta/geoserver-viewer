@@ -55,16 +55,16 @@ export const GeoserverConfigForm = () => {
     <Card>
       <header className="p-0.5">
         <Button
-          className="flex justify-between items-center p-2 w-full"
+          className="flex items-center w-full"
           onClick={() => setIsExpanded((prev) => !prev)}
           title={isExpanded ? 'Ocultar configuración' : 'Mostar configuración'}
           variant="ghost"
           size="sm"
         >
-          <h2 className="font-semibold">
+          <span className="font-semibold">
             {isExpanded ? 'Ocultar configuración' : 'Mostrar configuración'}
-          </h2>
-          <span className="text-blue-600 ml-4 w-5 aspect-square">
+          </span>
+          <span className="text-blue-600 ml-2 w-6 aspect-square text-base">
             {isExpanded ? '▼' : '▶'}
           </span>
         </Button>
