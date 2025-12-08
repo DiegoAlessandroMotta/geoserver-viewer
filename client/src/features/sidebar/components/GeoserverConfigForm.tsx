@@ -2,6 +2,8 @@ import { useState } from 'react'
 import { Card } from '@/shared/components/Card'
 import { Button } from '@/shared/components/Button'
 import { useGeoserverConfig } from '@/shared/context/geoserver-config/useGeoserverConfig'
+import { ChevronDownIcon } from '@/shared/components/icons/ChevronDownIcon'
+import { cn } from '@/shared/lib/utils'
 
 export const GeoserverConfigForm = () => {
   const [isExpanded, setIsExpanded] = useState(false)
@@ -57,16 +59,18 @@ export const GeoserverConfigForm = () => {
         <Button
           className="flex items-center w-full"
           onClick={() => setIsExpanded((prev) => !prev)}
-          title={isExpanded ? 'Ocultar configuración' : 'Mostar configuración'}
           variant="ghost"
           size="sm"
         >
           <span className="font-semibold">
             {isExpanded ? 'Ocultar configuración' : 'Mostrar configuración'}
           </span>
-          <span className="text-blue-600 ml-2 w-6 aspect-square text-base">
-            {isExpanded ? '▼' : '▶'}
-          </span>
+          <ChevronDownIcon
+            className={cn(
+              'size-6 aspect-square ml-2 transition-[rotate] duration-300',
+              isExpanded ? 'rotate-180' : 'rotate-0',
+            )}
+          />
         </Button>
       </header>
 

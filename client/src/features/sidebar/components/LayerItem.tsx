@@ -1,3 +1,4 @@
+import { ChevronDownIcon } from '@/shared/components/icons/ChevronDownIcon'
 import type { LayerInfo } from '@/shared/context/layer/LayerContext'
 import { cn } from '@/shared/lib/utils'
 import { useState } from 'react'
@@ -42,11 +43,16 @@ export const LayerItem = ({ layer, onToggle }: Props) => {
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className={cn(
-              `shrink-0 aspect-square w-8 font-semibold rounded text-gray-800 cursor-pointer hover:bg-black/10 mr-0.5`,
+              `shrink-0 aspect-square size-8 font-semibold rounded text-gray-800 cursor-pointer hover:bg-black/10 mr-0.5`,
             )}
             title={isExpanded ? 'Mostrar detalles' : 'Ocultar detalles'}
           >
-            {isExpanded ? '▼' : '▶'}
+            <ChevronDownIcon
+              className={cn(
+                'size-6 aspect-square transition-[rotate] duration-300 mx-auto',
+                isExpanded ? 'rotate-180' : 'rotate-0',
+              )}
+            />
           </button>
         </div>
 
