@@ -24,6 +24,7 @@ export const TileLoggerProvider = ({
   children,
 }: TileLoggerProviderProps) => {
   const [logs, setLogs] = useState<TileLogEntry[]>([])
+  const [visible, setVisible] = useState(false)
 
   const addLog = useCallback(
     (msg: WSProxyResponseMessage) => {
@@ -42,6 +43,9 @@ export const TileLoggerProvider = ({
   )
 
   const clearLogs = useCallback(() => setLogs([]), [])
+  const open = useCallback(() => setVisible(true), [])
+  const close = useCallback(() => setVisible(false), [])
+  const toggle = useCallback(() => setVisible((v) => !v), [])
 
   useEffect(() => {
     const unsub = websocketClient.onMessage((m: WSMessage) => {
@@ -50,14 +54,23 @@ export const TileLoggerProvider = ({
       }
     })
 
-    return () => unsub()
+    return () => {
+      unsub()
+    }
   }, [addLog])
 
-  const value = useMemo(() => ({ logs, addLog, clearLogs }), [logs])
-
-  useEffect(() => {
-    websocketClient.connect()
-  }, [])
+  const value = useMemo(
+    () => ({
+      logs,
+      addLog,
+      clearLogs,
+      visible,
+      open,
+      close,
+      toggle,
+    }),
+    [logs, visible, addLog, clearLogs, open, close, toggle],
+  )
 
   return (
     <TileLoggerContext.Provider value={value}>

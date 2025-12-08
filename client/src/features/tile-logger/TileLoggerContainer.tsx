@@ -4,7 +4,11 @@ import { LogList } from './components/LogList'
 import { useTileLoggerContext } from '../../shared/context/tile-logger/useTileLogger'
 
 export const TileLoggerContainer = () => {
-  const { logs, clearLogs } = useTileLoggerContext()
+  const { logs, clearLogs, visible, close } = useTileLoggerContext()
+
+  if (!visible) {
+    return null
+  }
 
   return (
     <Card className="fixed bottom-2 right-2 w-96">
@@ -26,7 +30,7 @@ export const TileLoggerContainer = () => {
             variant="danger"
             size="sm"
             className="font-semibold"
-            // onClick={/* should use the context state */}
+            onClick={close}
           >
             Cerrar
           </Button>

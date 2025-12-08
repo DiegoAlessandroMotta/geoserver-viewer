@@ -10,6 +10,10 @@ export interface TileLoggerContextValue {
   logs: TileLogEntry[]
   addLog: (message: WSProxyResponseMessage) => void
   clearLogs: () => void
+  visible: boolean
+  open: () => void
+  close: () => void
+  toggle: () => void
 }
 
 export const TileLoggerContext = createContext<TileLoggerContextValue | null>(

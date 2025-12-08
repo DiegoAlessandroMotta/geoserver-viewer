@@ -3,9 +3,12 @@ import { Card } from '@/shared/components/Card'
 import { Button } from '@/shared/components/Button'
 import { LayerToggleList } from '@/features/sidebar/components/LayerToggleList'
 import { GeoserverConfigForm } from '@/features/sidebar/components/GeoserverConfigForm'
+import { useTileLoggerContext } from '@/shared/context/tile-logger/useTileLogger'
 
 export const SidebarContainer = () => {
   const { refreshLayers, loading } = useLayerContext()
+
+  const { toggle, visible } = useTileLoggerContext()
 
   return (
     <aside className="fixed top-0 left-0 w-72 h-dvh flex flex-col gap-2 py-2 pl-2 pb-10 overflow-y-auto pointer-events-none">
@@ -25,7 +28,7 @@ export const SidebarContainer = () => {
             </Button>
           </div>
 
-          <Button fullWidth>Mostrar logs</Button>
+          <Button fullWidth onClick={toggle}>{visible ? 'Ocultar logs' : 'Mostrar logs'}</Button>
         </header>
 
         <LayerToggleList />
