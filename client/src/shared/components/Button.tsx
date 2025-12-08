@@ -1,4 +1,5 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react'
+import { cn } from '../lib/utils'
 
 type ButtonVariant = 'primary' | 'outline' | 'danger' | 'ghost'
 type ButtonSize = 'sm' | 'md' | 'lg'
@@ -20,9 +21,6 @@ export function Button({
   disabled = false,
   ...rest
 }: Props) {
-  const base =
-    'inline-flex items-center justify-center rounded disabled:opacity-50'
-
   const sizes: Record<ButtonSize, string> = {
     sm: 'px-2 py-1 text-xs',
     md: 'px-3 py-2 text-sm',
@@ -42,12 +40,19 @@ export function Button({
 
   const width = fullWidth ? 'w-full' : ''
 
-  const classNames = [base, sizes[size], variants[variant], width, className]
-    .filter(Boolean)
-    .join(' ')
-
   return (
-    <button type={type} className={classNames} disabled={disabled} {...rest}>
+    <button
+      type={type}
+      className={cn(
+        'inline-flex items-center justify-center rounded disabled:opacity-50 cursor-pointer',
+        sizes[size],
+        variants[variant],
+        width,
+        className,
+      )}
+      disabled={disabled}
+      {...rest}
+    >
       {children}
     </button>
   )
