@@ -1,4 +1,4 @@
-import useLayerContext from '@/shared/context/layer/useLayerContext'
+import { useLayerContext } from '@/shared/context/layer/useLayerContext'
 import { Spin } from '@/shared/components/Spin'
 import { LayerItem } from '@/features/sidebar/components/LayerItem'
 
