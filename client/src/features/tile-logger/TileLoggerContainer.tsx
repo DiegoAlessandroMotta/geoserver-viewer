@@ -11,7 +11,7 @@ export const TileLoggerContainer = () => {
   }
 
   return (
-    <Card className="fixed bottom-2 right-2 w-96">
+    <Card className="fixed bottom-2 right-2 w-96 opacity-80 hover:opacity-100 transition-opacity">
       <header className="p-2 flex justify-between items-center border-b border-b-zinc-400">
         <p className="font-semibold text-sm text-gray-800">
           {logs.length} Registros

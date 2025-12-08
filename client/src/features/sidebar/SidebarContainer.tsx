@@ -11,7 +11,7 @@ export const SidebarContainer = () => {
   const { toggle, visible } = useTileLoggerContext()
 
   return (
-    <aside className="fixed top-0 left-0 w-72 h-dvh flex flex-col gap-2 py-2 pl-2 pb-10 overflow-y-auto pointer-events-none">
+    <aside className="fixed top-0 left-0 w-72 h-dvh flex flex-col gap-2 py-2 pl-2 pb-10 overflow-y-auto pointer-events-none  opacity-80 hover:opacity-100 transition-opacity">
       <GeoserverConfigForm />
       <Card className="max-h-full min-h-fit flex flex-col py-2 pointer-events-auto">
         <header className="mb-2 px-2">
@@ -28,7 +28,9 @@ export const SidebarContainer = () => {
             </Button>
           </div>
 
-          <Button fullWidth onClick={toggle}>{visible ? 'Ocultar logs' : 'Mostrar logs'}</Button>
+          <Button fullWidth onClick={toggle}>
+            {visible ? 'Ocultar logs' : 'Mostrar logs'}
+          </Button>
         </header>
 
         <LayerToggleList />
