@@ -2,6 +2,7 @@ import { XMLParser } from 'fast-xml-parser'
 import type { ILogger } from '@/shared/interfaces/logger.interface'
 import type { GeoserverConfigManagerService } from '@/shared/services/geoserver-config-manager.service'
 import { generateSHA1HexHash, randomColorFromString } from '@/shared/lib/utils'
+import { GeoserverAuthRequiredError } from '@/shared/errors/geoserver-auth-required.error'
 
 interface GeoserverServiceOptions {
   proxyUrl: string
@@ -96,6 +97,10 @@ export class GeoserverService {
           const result = await executor(items[index])
           results[index] = result
         } catch (error) {
+          if (error instanceof GeoserverAuthRequiredError) {
+            throw error
+          }
+
           this.logger.error({
             msg: `Error processing item ${index}:`,
             error,
@@ -121,6 +126,10 @@ export class GeoserverService {
         headers: this.getDefaultHeaders(true),
       })
 
+      if (res.status === 401) {
+        throw new GeoserverAuthRequiredError()
+      }
+
       if (!res.ok) {
         throw new Error(`REST layers endpoint failed: ${res.status}`)
       }
@@ -129,6 +138,10 @@ export class GeoserverService {
       const layers = data?.layers?.layer || []
       return Array.isArray(layers) ? layers : [layers]
     } catch (error) {
+      if (error instanceof GeoserverAuthRequiredError) {
+        throw error
+      }
+
       this.logger.error({ msg: 'Error fetching layers from REST API:', error })
       return []
     }
@@ -142,12 +155,19 @@ export class GeoserverService {
       const res = await fetch(url, {
         headers: this.getDefaultHeaders(true),
       })
+      if (res.status === 401) {
+        throw new GeoserverAuthRequiredError()
+      }
       if (!res.ok) {
         throw new Error(`Layer details fetch failed: ${res.status}`)
       }
 
       return await res.json()
     } catch (error) {
+      if (error instanceof GeoserverAuthRequiredError) {
+        throw error
+      }
+
       this.logger.error({
         msg: `Error fetching details for layer (${layerName}):`,
         error,
@@ -228,6 +248,10 @@ export class GeoserverService {
         const res = await fetch(url, {
           headers: this.getDefaultHeaders(true),
         })
+        if (res.status === 401) {
+          throw new GeoserverAuthRequiredError()
+        }
+
         if (!res.ok) {
           this.logger.warn({
             msg: 'WMS GetCapabilities request failed',
@@ -245,6 +269,10 @@ export class GeoserverService {
 
         return parsedXML
       } catch (error) {
+        if (error instanceof GeoserverAuthRequiredError) {
+          throw error
+        }
+
         this.logger.error({ msg: 'Error fetching WMS capabilities:', error })
         return null
       } finally {
@@ -351,7 +379,7 @@ export class GeoserverService {
       return detailedLayers
     } catch (error) {
       this.logger.error({ msg: 'Error fetching WMS layers:', error })
-      return []
+      throw error
     }
   }
 }

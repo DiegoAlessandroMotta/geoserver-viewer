@@ -55,7 +55,7 @@ export const GeoserverConfigForm = () => {
   }
 
   return (
-    <Card className="pointer-events-auto">
+    <Card id="geoserver-config" className="pointer-events-auto">
       <header className="p-0.5">
         <Button
           className="flex items-center w-full"
@@ -115,6 +115,7 @@ export const GeoserverConfigForm = () => {
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder="geo_user"
+                  id="geoserver-username"
                   className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </label>
@@ -131,6 +132,7 @@ export const GeoserverConfigForm = () => {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="geo_password"
+                  id="geoserver-password"
                   className="w-full px-2 py-1 text-xs border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-blue-400"
                 />
               </label>

@@ -10,6 +10,7 @@ import { LayerContext } from '@/shared/context/layer/LayerContext'
 import type { LayerInfo } from '@/shared/context/layer/LayerContext'
 import { geoserverService, logger } from '@/shared/providers'
 import { GeoserverConfigContext } from '@/shared/context/geoserver-config/GeoserverConfigContext'
+import { GeoserverAuthRequiredError } from '@/shared/errors/geoserver-auth-required.error'
 
 interface LayerContextProviderProps {
   children?: React.ReactNode
@@ -24,6 +25,7 @@ export const LayerContextProvider = ({
   const configCredentials = geoserverConfig?.credentials
   const [layersMap, setLayersMap] = useState<Map<string, LayerInfo>>(new Map())
   const [loading, setLoading] = useState(false)
+  const [authRequired, setAuthRequired] = useState(false)
   const isConfigured = Boolean(geoserverUrl && configWorkspace)
   const mountedRef = useRef(true)
 
@@ -78,6 +80,7 @@ export const LayerContextProvider = ({
         }
 
         const rawLayers = await geoserverService.fetchWMSLayers(ws ?? '')
+        setAuthRequired(false)
 
         const newLayers = new Map()
 
@@ -103,6 +106,16 @@ export const LayerContextProvider = ({
 
         setLayersMap(newLayers)
       } catch (error) {
+        if (error instanceof GeoserverAuthRequiredError) {
+          setAuthRequired(true)
+          setLayersMap(new Map())
+          logger.warn({
+            msg: 'LayerContextProvider.refreshLayers: auth required to fetch layers',
+            error,
+          })
+          return
+        }
+
         logger.warn({
           msg: 'LayerContextProvider.refreshLayers: could not fetch layers',
           error,
@@ -149,6 +162,7 @@ export const LayerContextProvider = ({
       refreshLayers,
       loading,
       isConfigured,
+      authRequired,
     }),
     [
       layersMap,
@@ -157,6 +171,7 @@ export const LayerContextProvider = ({
       refreshLayers,
       loading,
       isConfigured,
+      authRequired,
     ],
   )
 

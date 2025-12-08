@@ -3,7 +3,8 @@ import { Spin } from '@/shared/components/Spin'
 import { LayerItem } from '@/features/sidebar/components/LayerItem'
 
 export const LayerToggleList = () => {
-  const { layers, toggleLayer, loading, isConfigured } = useLayerContext()
+  const { layers, toggleLayer, loading, isConfigured, authRequired } =
+    useLayerContext()
   const layersArray = Array.from(layers.values())
 
   if (!isConfigured) {
@@ -30,6 +31,18 @@ export const LayerToggleList = () => {
           </div>
         </div>
       </>
+    )
+  }
+
+  if (authRequired) {
+    return (
+      <div className="px-2">
+        <div className="p-4 bg-red-100 border border-red-300 rounded text-sm text-red-800 text-center">
+          Se requieren credenciales para acceder a GeoServer. Añade tus
+          credenciales en la configuración de GeoServer para visualizar las
+          capas.
+        </div>
+      </div>
     )
   }
 

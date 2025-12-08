@@ -25,6 +25,7 @@ export type LayerContextType = {
   refreshLayers: (workspace?: string) => Promise<void>
   loading: boolean
   isConfigured: boolean
+  authRequired: boolean
 }
 
 export const LayerContext = createContext<LayerContextType>({
@@ -34,4 +35,5 @@ export const LayerContext = createContext<LayerContextType>({
   refreshLayers: async () => undefined,
   loading: false,
   isConfigured: false,
+  authRequired: false,
 })
