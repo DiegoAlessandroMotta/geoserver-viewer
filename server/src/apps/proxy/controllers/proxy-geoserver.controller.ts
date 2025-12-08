@@ -31,14 +31,34 @@ export class ProxyGeoserverController {
         return
       }
 
-      const targetUrl = `${geoServerUrl}${req.path}`
-        .replace(/\/\/+/g, '/')
-        .replace('http:/', 'http://')
+      const joinUrl = (base: string, path: string): string => {
+        const normalizedBase = String(base).replace(/\/+$/, '')
+        const normalizedPath = String(path).replace(/^\/+/, '')
+        return `${normalizedBase}/${normalizedPath}`
+      }
+
+      const targetUrl = joinUrl(geoServerUrl, req.url)
 
       const headers: Record<string, string> = {}
-      const authHeader = req.get('Authorization')
-      if (authHeader) {
-        headers['Authorization'] = authHeader
+      for (const [key, value] of Object.entries(req.headers)) {
+        if (!value) continue
+        const lower = key.toLowerCase()
+        if (lower === 'host') continue
+        if (Array.isArray(value)) {
+          headers[key] = value.join(',')
+        } else {
+          headers[key] = String(value)
+        }
+      }
+
+      this._logger.debug(targetUrl)
+
+      if (!['GET', 'HEAD'].includes(req.method.toUpperCase())) {
+        res.status(405).json({
+          error: 'Method not allowed',
+          message: 'Only GET and HEAD methods are supported by the proxy',
+        })
+        return
       }
 
       const response = await this._useCase.execute({
@@ -96,7 +116,7 @@ export class ProxyGeoserverController {
       }
 
       const cacheResult = this._useCase.extractCacheResult(response.headers)
-      const absoluteRequestUrl = `${req.protocol}://${req.get('host')}${req.baseUrl}${req.path}`
+      const absoluteRequestUrl = `${req.protocol}://${req.get('host')}${req.baseUrl}${req.url}`
 
       this._wsSessionService.sendToClient(sessionId, {
         type: 'proxy-response',
