@@ -55,17 +55,15 @@ export const GeoserverConfigForm = () => {
   }
 
   return (
-    <Card id="geoserver-config" className="pointer-events-auto">
+    <Card id="geoserver-config" className="pointer-events-auto" semiTransparent>
       <header className="p-0.5">
         <Button
-          className="flex items-center w-full"
           onClick={() => setIsExpanded((prev) => !prev)}
           variant="ghost"
-          size="sm"
+          fullWidth
+          className="py-1 justify-between"
         >
-          <span className="font-semibold">
-            {isExpanded ? 'Ocultar configuración' : 'Mostrar configuración'}
-          </span>
+          <span className="font-semibold text-gray-800">Configuración</span>
           <ChevronDownIcon
             className={cn(
               'size-6 aspect-square ml-2 transition-[rotate] duration-300',
