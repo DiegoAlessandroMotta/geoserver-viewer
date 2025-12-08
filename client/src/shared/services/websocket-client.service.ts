@@ -26,10 +26,16 @@ export class WebsocketClient {
   private isManualClose = false
   private readonly logger?: ILogger
   private readonly configManager?: GeoserverConfigManagerService
+  private readonly messageListeners: Set<(msg: WSMessage) => void> = new Set()
 
   constructor({ logger, configManager }: WebsocketClientOptions = {}) {
     this.logger = logger
     this.configManager = configManager
+  }
+
+  public onMessage = (listener: (msg: WSMessage) => void) => {
+    this.messageListeners.add(listener)
+    return () => this.messageListeners.delete(listener)
   }
 
   private getWsUrl() {
@@ -46,7 +52,10 @@ export class WebsocketClient {
   }
 
   public connect = () => {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) return
+    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+      return
+    }
+
     const wsUrl = this.getWsUrl()
     this.isManualClose = false
     this.logger?.debug({ msg: 'WebsocketClient: connecting', wsUrl })
@@ -63,6 +72,14 @@ export class WebsocketClient {
         try {
           const payload: WSMessage = JSON.parse(event.data)
           this.handleMessage(payload)
+
+          this.messageListeners.forEach((l) => {
+            try {
+              l(payload)
+            } catch {
+              // ignore
+            }
+          })
         } catch (error) {
           this.logger?.warn({ msg: 'WebsocketClient: invalid message', error })
         }

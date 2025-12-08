@@ -1,16 +1,20 @@
+import { useTileLoggerContext } from '../../../shared/context/tile-logger/useTileLogger'
 import { LogItem } from './LogItem'
 
 export const LogList = () => {
-  // if (/* if logs are empty then show this message */) {
-  //   return (
-  //     <div className="text-xs text-gray-400 py-2">No hay registros aún</div>
-  //   )
-  // }
+  const { logs } = useTileLoggerContext()
+
+  if (logs.length === 0) {
+    return (
+      <div className="text-xs text-gray-500 p-2 font-medium">No hay registros aún</div>
+    )
+  }
 
   return (
-    <ul className="flex flex-col px-2 max-h-72 overflow-auto">
-      <LogItem />
-      <LogItem />
+    <ul className="flex flex-col px-2 max-h-96 overflow-auto">
+      {logs.map((l) => (
+        <LogItem key={l.id} item={l} />
+      ))}
     </ul>
   )
 }
