@@ -41,6 +41,7 @@ export const GeoserverConfigForm = () => {
 
     setUsername('')
     setPassword('')
+    setIsExpanded(false)
   }
 
   const handleClear = () => {
