@@ -2,7 +2,7 @@ import { appConfig } from '@/shared/config'
 import { useRef } from 'react'
 import Map, { NavigationControl, ScaleControl } from 'react-map-gl/maplibre'
 import mapLibregl from 'maplibre-gl'
-import { MapLayers } from './components/MapLayers'
+import { MapLayers } from '@/features/map/components/MapLayers'
 import { geoserverService } from '@/shared/providers'
 
 export const MapContainer = () => {

@@ -1,5 +1,5 @@
 import { useLayerContext } from '@/shared/context/layer/useLayerContext'
-import { CustomLayer } from './CustomLayer'
+import { CustomLayer } from '@/features/map/components/CustomLayer'
 
 export const MapLayers = () => {
   const { layers } = useLayerContext()

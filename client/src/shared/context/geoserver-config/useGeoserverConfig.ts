@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { GeoserverConfigContext } from './GeoserverConfigContext'
+import { GeoserverConfigContext } from '@/shared/context/geoserver-config/GeoserverConfigContext'
 
 export const useGeoserverConfig = () => {
   const ctx = useContext(GeoserverConfigContext)

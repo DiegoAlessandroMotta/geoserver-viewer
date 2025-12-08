@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Card } from '../../../shared/components/Card'
+import { Card } from '@/shared/components/Card'
 import { Button } from '@/shared/components/Button'
 import { useGeoserverConfig } from '@/shared/context/geoserver-config/useGeoserverConfig'
 

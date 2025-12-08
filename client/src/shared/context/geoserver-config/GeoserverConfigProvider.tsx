@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from 'react'
-import { GeoserverConfigContext } from './GeoserverConfigContext'
+import { GeoserverConfigContext } from '@/shared/context/geoserver-config/GeoserverConfigContext'
 import { geoserverConfigService } from '@/shared/providers'
-import type { GeoserverConfig } from './GeoserverConfigContext'
+import type { GeoserverConfig } from '@/shared/context/geoserver-config/GeoserverConfigContext'
 
 export interface GeoserverConfigProviderProps {
   children?: React.ReactNode

@@ -1,4 +1,4 @@
-import type { ILogger } from '../interfaces/logger.interface'
+import type { ILogger } from '@/shared/interfaces/logger.interface'
 
 export interface GeoserverCredentials {
   username: string | null

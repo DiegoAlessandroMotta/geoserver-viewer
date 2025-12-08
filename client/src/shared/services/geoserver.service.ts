@@ -1,7 +1,7 @@
 import { XMLParser } from 'fast-xml-parser'
 import type { ILogger } from '@/shared/interfaces/logger.interface'
-import type { GeoserverConfigManagerService } from './geoserver-config-manager.service'
-import { generateSHA1HexHash, randomColorFromString } from '../lib/utils'
+import type { GeoserverConfigManagerService } from '@/shared/services/geoserver-config-manager.service'
+import { generateSHA1HexHash, randomColorFromString } from '@/shared/lib/utils'
 
 interface GeoserverServiceOptions {
   proxyUrl: string

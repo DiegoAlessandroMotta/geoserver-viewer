@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { LayerContext } from './LayerContext'
+import { LayerContext } from '@/shared/context/layer/LayerContext'
 
 export const useLayerContext = () => useContext(LayerContext)
 

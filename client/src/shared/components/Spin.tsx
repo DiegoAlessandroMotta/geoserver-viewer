@@ -1,5 +1,5 @@
 import React from 'react'
-import { cn } from '../lib/utils'
+import { cn } from '@/shared/lib/utils'
 
 export type SpinSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number
 

@@ -6,8 +6,8 @@ import {
   useState,
   useRef,
 } from 'react'
-import { LayerContext } from './LayerContext'
-import type { LayerInfo } from './LayerContext'
+import { LayerContext } from '@/shared/context/layer/LayerContext'
+import type { LayerInfo } from '@/shared/context/layer/LayerContext'
 import { geoserverService, logger } from '@/shared/providers'
 import { GeoserverConfigContext } from '@/shared/context/geoserver-config/GeoserverConfigContext'
 
@@ -52,57 +52,59 @@ export const LayerContextProvider = ({
     })
   }, [])
 
-  const refreshLayers = useCallback(async (workspaceArg?: string) => {
-    const ws = workspaceArg ?? configWorkspace
-    setLoading(true)
-    try {
-      logger.debug({
-        msg: 'LayerContextProvider.refreshLayers: starting refresh',
-      })
-
-      if (!mountedRef.current) {
+  const refreshLayers = useCallback(
+    async (workspaceArg?: string) => {
+      const ws = workspaceArg ?? configWorkspace
+      setLoading(true)
+      try {
         logger.debug({
-          msg: 'LayerContextProvider.refreshLayers: mountedRef not found, skipping refresh',
+          msg: 'LayerContextProvider.refreshLayers: starting refresh',
         })
-        return
+
+        if (!mountedRef.current) {
+          logger.debug({
+            msg: 'LayerContextProvider.refreshLayers: mountedRef not found, skipping refresh',
+          })
+          return
+        }
+
+        const rawLayers = await geoserverService.fetchWMSLayers(ws ?? '')
+
+        const newLayers = new Map()
+
+        rawLayers.forEach((l) => {
+          const name = l.name || l.title || l.short
+
+          newLayers.set(name, {
+            name,
+            short: l.short,
+            title: l.title,
+            workspace: l.workspace,
+            store: l.store,
+            type: l.type,
+            fullName: l.name,
+            defaultStyle: l.defaultStyle,
+            crs: l.crs,
+            dateCreated: l.dateCreated,
+            dateModified: l.dateModified,
+            enabled: false,
+            color: l.color,
+          })
+        })
+
+        setLayersMap(newLayers)
+      } catch (error) {
+        logger.warn({
+          msg: 'LayerContextProvider.refreshLayers: could not fetch layers',
+          error,
+        })
+        setLayersMap(new Map())
+      } finally {
+        setLoading(false)
       }
-
-      const rawLayers = await geoserverService.fetchWMSLayers(ws ?? '')
-
-      const newLayers = new Map()
-
-      rawLayers.forEach((l) => {
-        const name = l.name || l.title || l.short
-
-        newLayers.set(name, {
-          name,
-          short: l.short,
-          title: l.title,
-          workspace: l.workspace,
-          store: l.store,
-          type: l.type,
-          fullName: l.name,
-          defaultStyle: l.defaultStyle,
-          crs: l.crs,
-          dateCreated: l.dateCreated,
-          dateModified: l.dateModified,
-          enabled: false,
-          color: l.color,
-        })
-      })
-
-      setLayersMap(newLayers)
-    } catch (error) {
-      logger.warn({
-        msg: 'LayerContextProvider.refreshLayers: could not fetch layers',
-        error,
-      })
-      setLayersMap(new Map())
-    }
-    finally {
-      setLoading(false)
-    }
-  }, [configWorkspace])
+    },
+    [configWorkspace],
+  )
 
   useEffect(() => {
     mountedRef.current = true
