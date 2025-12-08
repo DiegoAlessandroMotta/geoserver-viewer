@@ -56,24 +56,10 @@ export const LayerToggleList = () => {
 
   return (
     <>
-      <p className="text-xs text-blue-500 mt-2 px-2 font-medium">
+      <p className="text-xs text-blue-500 px-2 font-medium">
         {layersArray.length} disponibles
       </p>
       <div className="flex-1 min-h-0 overflow-y-auto space-y-1 px-2 mt-1">
-        {layersArray.map((l) => (
-          <LayerItem
-            key={l.name}
-            layer={l}
-            onToggle={() => toggleLayer(l.name)}
-          />
-        ))}
-        {layersArray.map((l) => (
-          <LayerItem
-            key={l.name}
-            layer={l}
-            onToggle={() => toggleLayer(l.name)}
-          />
-        ))}
         {layersArray.map((l) => (
           <LayerItem
             key={l.name}

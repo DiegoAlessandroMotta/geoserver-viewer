@@ -15,7 +15,7 @@ export const LayerToggleCard = () => {
   return (
     <Card
       className={cn(
-        'max-h-full min-h-fit flex flex-col pointer-events-auto',
+        'shrink max-h-full flex flex-col pointer-events-auto overflow-hidden',
         isExpanded ? 'pb-2' : undefined,
       )}
       semiTransparent
@@ -27,7 +27,7 @@ export const LayerToggleCard = () => {
           fullWidth
           className="py-1 justify-between"
         >
-          <span className="font-semibold text-gray-800">Capas</span>
+          <span className="font-semibold">Capas</span>
           <ChevronDownIcon
             className={cn(
               'size-6 aspect-square ml-2 transition-[rotate] duration-300',
@@ -37,7 +37,7 @@ export const LayerToggleCard = () => {
         </Button>
 
         {isExpanded && (
-          <div className="px-2 mt-2 grid grid-cols-2 gap-2">
+          <div className="px-2 my-2 grid grid-cols-2 gap-2">
             <Button
               variant="outline"
               size="sm"
