@@ -24,6 +24,7 @@ export type LayerContextType = {
   toggleLayer: (layerName: string) => void
   refreshLayers: (workspace?: string) => Promise<void>
   loading: boolean
+  isConfigured: boolean
 }
 
 export const LayerContext = createContext<LayerContextType>({
@@ -32,4 +33,5 @@ export const LayerContext = createContext<LayerContextType>({
   toggleLayer: () => undefined,
   refreshLayers: async () => undefined,
   loading: false,
+  isConfigured: false,
 })

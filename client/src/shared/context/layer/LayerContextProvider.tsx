@@ -24,6 +24,7 @@ export const LayerContextProvider = ({
   const configCredentials = geoserverConfig?.credentials
   const [layersMap, setLayersMap] = useState<Map<string, LayerInfo>>(new Map())
   const [loading, setLoading] = useState(false)
+  const isConfigured = Boolean(geoserverUrl && configWorkspace)
   const mountedRef = useRef(true)
 
   const setLayerEnabled = useCallback((layerName: string, enabled: boolean) => {
@@ -55,6 +56,14 @@ export const LayerContextProvider = ({
   const refreshLayers = useCallback(
     async (workspaceArg?: string) => {
       const ws = workspaceArg ?? configWorkspace
+      if (!isConfigured) {
+        logger.debug({
+          msg: 'LayerContextProvider.refreshLayers: geoserver not configured; skipping fetch',
+        })
+        setLayersMap(new Map())
+        setLoading(false)
+        return
+      }
       setLoading(true)
       try {
         logger.debug({
@@ -103,7 +112,7 @@ export const LayerContextProvider = ({
         setLoading(false)
       }
     },
-    [configWorkspace],
+    [configWorkspace, isConfigured],
   )
 
   useEffect(() => {
@@ -116,7 +125,7 @@ export const LayerContextProvider = ({
       logger.debug({
         msg: 'LayerContextProvider: scheduled refresh is running',
       })
-      refreshLayers()
+      if (isConfigured) refreshLayers()
     }, debounceDelayMs)
 
     return () => {
@@ -129,6 +138,7 @@ export const LayerContextProvider = ({
     geoserverUrl,
     configCredentials?.username,
     configCredentials?.password,
+    isConfigured,
   ])
 
   const value = useMemo(
@@ -138,8 +148,16 @@ export const LayerContextProvider = ({
       toggleLayer,
       refreshLayers,
       loading,
+      isConfigured,
     }),
-    [layersMap, setLayerEnabled, toggleLayer, refreshLayers, loading],
+    [
+      layersMap,
+      setLayerEnabled,
+      toggleLayer,
+      refreshLayers,
+      loading,
+      isConfigured,
+    ],
   )
 
   return <LayerContext.Provider value={value}>{children}</LayerContext.Provider>

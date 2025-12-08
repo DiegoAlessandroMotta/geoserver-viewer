@@ -6,7 +6,7 @@ import { GeoserverConfigForm } from '@/features/sidebar/components/GeoserverConf
 import { useTileLoggerContext } from '@/shared/context/tile-logger/useTileLogger'
 
 export const SidebarContainer = () => {
-  const { refreshLayers, loading } = useLayerContext()
+  const { refreshLayers, loading, isConfigured } = useLayerContext()
 
   const { toggle, visible } = useTileLoggerContext()
 
@@ -22,7 +22,7 @@ export const SidebarContainer = () => {
               size="sm"
               onClick={() => refreshLayers()}
               className="font-semibold"
-              disabled={loading}
+              disabled={loading || !isConfigured}
             >
               Actualizar
             </Button>

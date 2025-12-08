@@ -3,8 +3,19 @@ import { Spin } from '@/shared/components/Spin'
 import { LayerItem } from '@/features/sidebar/components/LayerItem'
 
 export const LayerToggleList = () => {
-  const { layers, toggleLayer, loading } = useLayerContext()
+  const { layers, toggleLayer, loading, isConfigured } = useLayerContext()
   const layersArray = Array.from(layers.values())
+
+  if (!isConfigured) {
+    return (
+      <div className="px-2">
+        <div className="p-4 bg-orange-50 border border-orange-300 rounded text-sm text-orange-800 text-center">
+          Debes configurar la URL de GeoServer y el workspace antes de cargar
+          capas.
+        </div>
+      </div>
+    )
+  }
 
   if (loading) {
     return (
