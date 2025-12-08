@@ -52,7 +52,7 @@ export const GeoserverConfigForm = () => {
   }
 
   return (
-    <Card>
+    <Card className="pointer-events-auto">
       <header className="p-0.5">
         <Button
           className="flex items-center w-full"

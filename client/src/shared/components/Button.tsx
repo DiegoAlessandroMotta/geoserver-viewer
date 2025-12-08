@@ -29,13 +29,13 @@ export function Button({
 
   const variants: Record<ButtonVariant, string> = {
     primary:
-      'font-medium border bg-blue-600 text-white hover:bg-blue-700 border-transparent',
+      'font-medium border bg-blue-600 text-white not-disabled:hover:bg-blue-700 border-transparent',
     outline:
-      'font-medium border bg-blue-50 border-blue-600 text-blue-600 hover:bg-blue-100',
+      'font-medium border bg-blue-50 border-blue-600 text-blue-600 not-disabled:hover:bg-blue-100',
     danger:
-      'font-medium border bg-red-50 border-red-600 text-red-600 hover:bg-red-100',
+      'font-medium border bg-red-50 border-red-600 text-red-600 not-disabled:hover:bg-red-100',
     ghost:
-      'font-medium border bg-transparent text-blue-600 hover:bg-blue-50 border-transparent',
+      'font-medium border bg-transparent text-blue-600 not-disabled:hover:bg-blue-50 border-transparent',
   }
 
   const width = fullWidth ? 'w-full' : ''
@@ -44,7 +44,7 @@ export function Button({
     <button
       type={type}
       className={cn(
-        'inline-flex items-center justify-center rounded disabled:opacity-50 cursor-pointer',
+        'inline-flex items-center justify-center rounded disabled:opacity-50 cursor-pointer disabled:cursor-not-allowed',
         sizes[size],
         variants[variant],
         width,

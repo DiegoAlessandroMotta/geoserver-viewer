@@ -23,6 +23,7 @@ export const LayerContextProvider = ({
   const geoserverUrl = geoserverConfig?.geoserverUrl ?? undefined
   const configCredentials = geoserverConfig?.credentials
   const [layersMap, setLayersMap] = useState<Map<string, LayerInfo>>(new Map())
+  const [loading, setLoading] = useState(false)
   const mountedRef = useRef(true)
 
   const setLayerEnabled = useCallback((layerName: string, enabled: boolean) => {
@@ -51,7 +52,9 @@ export const LayerContextProvider = ({
     })
   }, [])
 
-  const refreshLayers = useCallback(async () => {
+  const refreshLayers = useCallback(async (workspaceArg?: string) => {
+    const ws = workspaceArg ?? configWorkspace
+    setLoading(true)
     try {
       logger.debug({
         msg: 'LayerContextProvider.refreshLayers: starting refresh',
@@ -64,9 +67,7 @@ export const LayerContextProvider = ({
         return
       }
 
-      const rawLayers = await geoserverService.fetchWMSLayers(
-        configWorkspace ?? '',
-      )
+      const rawLayers = await geoserverService.fetchWMSLayers(ws ?? '')
 
       const newLayers = new Map()
 
@@ -97,6 +98,9 @@ export const LayerContextProvider = ({
         error,
       })
       setLayersMap(new Map())
+    }
+    finally {
+      setLoading(false)
     }
   }, [configWorkspace])
 
@@ -131,8 +135,9 @@ export const LayerContextProvider = ({
       setLayerEnabled,
       toggleLayer,
       refreshLayers,
+      loading,
     }),
-    [layersMap, setLayerEnabled, toggleLayer, refreshLayers],
+    [layersMap, setLayerEnabled, toggleLayer, refreshLayers, loading],
   )
 
   return <LayerContext.Provider value={value}>{children}</LayerContext.Provider>
