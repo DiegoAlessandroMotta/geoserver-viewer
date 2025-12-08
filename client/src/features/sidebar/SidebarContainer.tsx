@@ -1,5 +1,5 @@
 import { useLayerContext } from '@/shared/context/layer/useLayerContext'
-import { Card } from './components/Card'
+import { Card } from '../../shared/components/Card'
 import { Button } from '@/shared/components/Button'
 import { LayerToggleList } from './components/LayerToggleList'
 import { GeoserverConfigForm } from './components/GeoserverConfigForm'
