@@ -1,4 +1,5 @@
 export const API_ROUTES = {
+  prefix: '/api',
   up: '/up',
 }
 
