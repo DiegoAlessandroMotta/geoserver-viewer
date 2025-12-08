@@ -5,7 +5,10 @@ import {
   useState,
   type ReactNode,
 } from 'react'
-import { TileLoggerContext, type TileLogEntry } from './TileLoggerContext'
+import {
+  TileLoggerContext,
+  type TileLogEntry,
+} from '@/shared/context/tile-logger/TileLoggerContext'
 import type {
   WSMessage,
   WSProxyResponseMessage,

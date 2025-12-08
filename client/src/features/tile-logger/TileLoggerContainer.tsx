@@ -1,7 +1,7 @@
 import { Button } from '@/shared/components/Button'
 import { Card } from '@/shared/components/Card'
-import { LogList } from './components/LogList'
-import { useTileLoggerContext } from '../../shared/context/tile-logger/useTileLogger'
+import { LogList } from '@/features/tile-logger/components/LogList'
+import { useTileLoggerContext } from '@/shared/context/tile-logger/useTileLogger'
 
 export const TileLoggerContainer = () => {
   const { logs, clearLogs, visible, close } = useTileLoggerContext()

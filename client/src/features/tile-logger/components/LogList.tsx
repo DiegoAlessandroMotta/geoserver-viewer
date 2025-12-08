@@ -1,5 +1,5 @@
-import { useTileLoggerContext } from '../../../shared/context/tile-logger/useTileLogger'
-import { LogItem } from './LogItem'
+import { useTileLoggerContext } from '@/shared/context/tile-logger/useTileLogger'
+import { LogItem } from '@/features/tile-logger/components/LogItem'
 
 export const LogList = () => {
   const { logs } = useTileLoggerContext()

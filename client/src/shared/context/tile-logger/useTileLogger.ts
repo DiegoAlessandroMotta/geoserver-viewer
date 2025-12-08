@@ -1,5 +1,5 @@
 import { useContext } from 'react'
-import { TileLoggerContext } from './TileLoggerContext'
+import { TileLoggerContext } from '@/shared/context/tile-logger/TileLoggerContext'
 
 export const useTileLoggerContext = () => {
   const ctx = useContext(TileLoggerContext)

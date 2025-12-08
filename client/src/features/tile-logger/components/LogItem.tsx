@@ -1,4 +1,4 @@
-import type { TileLogEntry } from '../../../shared/context/tile-logger/TileLoggerContext'
+import type { TileLogEntry } from '@/shared/context/tile-logger/TileLoggerContext'
 
 export const LogItem: React.FC<{ item: TileLogEntry }> = ({ item }) => {
   let workspace: string | null = null
