@@ -8,14 +8,22 @@ export class WebSocketServer {
   private _wsServer?: WSServer
   private _sessionService: WebSocketSessionService
   private readonly _logger: ILogger
+  private readonly basePath?: string
 
-  constructor(logger: ILogger, sessionService: WebSocketSessionService) {
+  constructor(
+    logger: ILogger,
+    sessionService: WebSocketSessionService,
+    basePath?: string,
+  ) {
     this._logger = logger
     this._sessionService = sessionService
+    this.basePath = basePath
   }
 
   public configure(httpServer: HttpServer): void {
-    this._wsServer = new WSServer({ server: httpServer, path: '/ws' })
+    const wsPath = `${this.basePath ?? ''}/ws`.replace(/\/+/g, '/')
+
+    this._wsServer = new WSServer({ server: httpServer, path: wsPath })
 
     this._wsServer.on('connection', (ws) => {
       this.handleNewConnection(ws)
@@ -23,7 +31,7 @@ export class WebSocketServer {
 
     this._logger?.info({
       message: 'WebSocket server configured',
-      context: { path: '/ws' },
+      context: { path: wsPath },
     })
   }
 

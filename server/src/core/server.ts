@@ -69,7 +69,12 @@ export class Server {
   }
 
   private configureRoutes(): void {
-    this._app.use(API_ROUTES.prefix, this._routes)
+    const basePath = (serverConfig.basePath + API_ROUTES.prefix).replace(
+      /\/+/g,
+      '/',
+    )
+
+    this._app.use(basePath, this._routes)
   }
 
   private configureWebsocketServer(): void {
@@ -85,11 +90,12 @@ export class Server {
       }
 
       this._httpServer.listen(this._port, this._host, () => {
+        const base = serverConfig?.basePath ?? ''
         this._logger.info({
           message: 'Server started',
           context: {
-            url: `http://${this._host}:${this._port}`,
-            wsUrl: `ws://${this._host}:${this._port}/ws`,
+            url: `http://${this._host}:${this._port}${base}`,
+            wsUrl: `ws://${this._host}:${this._port}${base}/ws`,
           },
         })
 

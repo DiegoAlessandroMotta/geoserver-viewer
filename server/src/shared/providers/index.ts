@@ -12,6 +12,7 @@ export const websocketSessionService = new WebSocketSessionService(logger)
 export const websocketServer = new WebSocketServer(
   logger,
   websocketSessionService,
+  serverConfig.basePath,
 )
 
 export const loggerMiddleware = new LoggerMiddleware(logger)
