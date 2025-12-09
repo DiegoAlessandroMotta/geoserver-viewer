@@ -7,9 +7,9 @@ export class AppRoutes implements IRouter {
   routes() {
     const router = Router()
 
-    router.use(API_ROUTES.prefix + PROXY_ROUTES.prefix, proxyRoutes.routes())
+    router.use(PROXY_ROUTES.prefix, proxyRoutes.routes())
 
-    router.get(API_ROUTES.prefix + API_ROUTES.up, (_req, res) => {
+    router.get(API_ROUTES.up, (_req, res) => {
       res.status(200).json({
         status: 'up',
       })

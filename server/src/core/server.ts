@@ -7,6 +7,7 @@ import {
   loggerMiddleware,
   websocketServer,
 } from '@/shared/providers'
+import { API_ROUTES } from '@/core/routes/const.routes'
 
 interface ServerOptions {
   logger: ILogger
@@ -68,7 +69,7 @@ export class Server {
   }
 
   private configureRoutes(): void {
-    this._app.use(this._routes)
+    this._app.use(API_ROUTES.prefix, this._routes)
   }
 
   private configureWebsocketServer(): void {
