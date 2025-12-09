@@ -43,11 +43,16 @@ export class WebsocketClient {
       const base = appConfig.proxyUrl || window.location.origin
       const url = new URL(base)
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
-      url.pathname = '/ws'
+      const basePath = appConfig.basePath ?? ''
+      url.pathname = (basePath + '/ws').replace(/\/+/g, '/')
       return url.toString()
     } catch {
       const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
-      return `${protocol}://${window.location.host}/ws`
+      const basePath = appConfig.basePath ?? ''
+      return `${protocol}://${window.location.host}${basePath}/ws`.replace(
+        /\/+/g,
+        '/',
+      )
     }
   }
 
