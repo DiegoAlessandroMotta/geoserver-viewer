@@ -21,6 +21,7 @@ export class ProxyGeoServerUseCase {
     'pragma',
     'last-modified',
     'content-encoding',
+    'www-authenticate',
   ])
 
   constructor(logger: ILogger) {
