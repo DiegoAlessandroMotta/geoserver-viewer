@@ -1,12 +1,25 @@
 import { defineConfig } from 'vite'
+import { loadEnv } from 'vite'
 import path from 'path'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 
+const get = (name: string, defaultValue: any = '') => {
+  const val =
+    loadEnv(process.env.NODE_ENV ?? 'development', process.cwd(), '')[name] ??
+    defaultValue
+
+  if (val === '') {
+    return
+  }
+
+  return val
+}
+
 // https://vite.dev/config/
 export default defineConfig({
   base: (() => {
-    const raw = process.env.VITE_BASE_PATH ?? ''
+    const raw = get('VITE_BASE_PATH') ?? ''
     let base = raw.trim()
 
     if (base.length === 0) {
