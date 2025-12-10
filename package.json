@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "",
   "scripts": {
+    "dev": "concurrently -k -n \"server,client\" -c \"yellow,cyan\" \"pnpm dev:server\" \"pnpm dev:client\"",
     "dev:server": "pnpm -F server dev",
     "build:server": "pnpm -F server build",
     "start:server": "pnpm -F server start",
@@ -18,10 +19,15 @@
     "lint:client": "pnpm -F client lint",
     "lint-fix:client": "pnpm -F client lint-fix",
     "format:client": "pnpm -F client format",
-    "format-check:client": "pnpm -F client format-check"
+    "format-check:client": "pnpm -F client format-check",
+    "copy-env": "node ./scripts/copy-env.mjs"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "concurrently": "^9.2.1"
   },
   "private": true,
-  "packageManager": "pnpm@10.24.0",
+  "packageManager": "pnpm@10.25.0",
   "keywords": [],
   "author": "",
   "license": "ISC",
