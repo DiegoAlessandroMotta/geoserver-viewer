@@ -20,6 +20,9 @@ export const CustomLayer = ({ layer }: Props) => {
   const baseColor = layer.color
   const outlineColor = '#000000'
 
+  const minZoom = layer.minZoom ?? appConfig.mapMinZoom
+  const maxZoom = layer.maxZoom ?? appConfig.mapMaxZoom
+
   return (
     <Source id={sourceId} type="vector" tiles={[tilesUrl]} scheme="tms">
       <Layer
@@ -35,8 +38,8 @@ export const CustomLayer = ({ layer }: Props) => {
           'fill-outline-color': outlineColor,
         }}
         filter={['==', '$type', 'Polygon']}
-        minzoom={appConfig.mapMinZoom}
-        maxzoom={appConfig.mapMaxZoom}
+        minzoom={minZoom}
+        maxzoom={maxZoom}
       />
 
       <Layer
@@ -52,8 +55,8 @@ export const CustomLayer = ({ layer }: Props) => {
           'line-opacity': 0.4,
         }}
         filter={['==', '$type', 'LineString']}
-        minzoom={appConfig.mapMinZoom}
-        maxzoom={appConfig.mapMaxZoom}
+        minzoom={minZoom}
+        maxzoom={maxZoom}
       />
 
       <Layer
@@ -71,8 +74,8 @@ export const CustomLayer = ({ layer }: Props) => {
           'circle-opacity': 0.4,
         }}
         filter={['==', '$type', 'Point']}
-        minzoom={appConfig.mapMinZoom}
-        maxzoom={appConfig.mapMaxZoom}
+        minzoom={minZoom}
+        maxzoom={maxZoom}
       />
     </Source>
   )

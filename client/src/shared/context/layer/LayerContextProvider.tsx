@@ -7,6 +7,7 @@ import {
   useRef,
 } from 'react'
 import { LayerContext } from '@/shared/context/layer/LayerContext'
+import { appConfig } from '@/shared/config'
 import type { LayerInfo } from '@/shared/context/layer/LayerContext'
 import { geoserverService, logger } from '@/shared/providers'
 import { GeoserverConfigContext } from '@/shared/context/geoserver-config/GeoserverConfigContext'
@@ -55,6 +56,22 @@ export const LayerContextProvider = ({
     })
   }, [])
 
+  const setLayerZooms = useCallback((layerName: string, minZoom: number, maxZoom: number) => {
+    setLayersMap((prev) => {
+      const copy = new Map(prev)
+      const existing = copy.get(layerName)
+      copy.set(layerName, {
+        ...existing,
+        name: layerName,
+        minZoom,
+        maxZoom,
+      })
+
+      console.log(copy);
+      return copy
+    })
+  }, [])
+
   const refreshLayers = useCallback(
     async (workspaceArg?: string) => {
       const ws = workspaceArg ?? configWorkspace
@@ -87,6 +104,9 @@ export const LayerContextProvider = ({
         rawLayers.forEach((l) => {
           const name = l.name || l.title || l.short
 
+          const defaultMin = Math.max(10, Number(appConfig.mapMinZoom ?? 0))
+          const defaultMax = Number(appConfig.mapMaxZoom ?? 28)
+
           newLayers.set(name, {
             name,
             short: l.short,
@@ -100,6 +120,8 @@ export const LayerContextProvider = ({
             dateCreated: l.dateCreated,
             dateModified: l.dateModified,
             enabled: false,
+            minZoom: defaultMin,
+            maxZoom: defaultMax,
             color: l.color,
           })
         })
@@ -158,6 +180,7 @@ export const LayerContextProvider = ({
     () => ({
       layers: layersMap,
       setLayerEnabled,
+      setLayerZooms,
       toggleLayer,
       refreshLayers,
       loading,
@@ -167,6 +190,7 @@ export const LayerContextProvider = ({
     [
       layersMap,
       setLayerEnabled,
+      setLayerZooms,
       toggleLayer,
       refreshLayers,
       loading,

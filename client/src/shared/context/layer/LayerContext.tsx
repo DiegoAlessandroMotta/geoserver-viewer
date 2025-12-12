@@ -14,6 +14,8 @@ export interface LayerInfo {
   dateModified?: string | null
   enabled?: boolean
   color?: string
+  minZoom?: number
+  maxZoom?: number
 }
 
 export type LayerMap = Map<string, LayerInfo>
@@ -21,6 +23,7 @@ export type LayerMap = Map<string, LayerInfo>
 export type LayerContextType = {
   layers: LayerMap
   setLayerEnabled: (layerName: string, enabled: boolean) => void
+  setLayerZooms: (layerName: string, minZoom: number, maxZoom: number) => void
   toggleLayer: (layerName: string) => void
   refreshLayers: (workspace?: string) => Promise<void>
   loading: boolean
@@ -31,6 +34,7 @@ export type LayerContextType = {
 export const LayerContext = createContext<LayerContextType>({
   layers: new Map(),
   setLayerEnabled: () => undefined,
+  setLayerZooms: () => undefined,
   toggleLayer: () => undefined,
   refreshLayers: async () => undefined,
   loading: false,

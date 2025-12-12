@@ -1,4 +1,5 @@
 import { ChevronDownIcon } from '@/shared/components/icons/ChevronDownIcon'
+import { appConfig } from '@/shared/config'
 import type { LayerInfo } from '@/shared/context/layer/LayerContext'
 import { cn } from '@/shared/lib/utils'
 import { useState } from 'react'
@@ -6,10 +7,15 @@ import { useState } from 'react'
 interface Props {
   layer: LayerInfo
   onToggle: () => void
+  onZoomChange?: (minZoom: number, maxZoom: number) => void
 }
 
-export const LayerItem = ({ layer, onToggle }: Props) => {
+export const LayerItem = ({ layer, onToggle, onZoomChange }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false)
+  const defaultMin = Math.max(14, Number(appConfig.mapMinZoom))
+  const defaultMax = Number(appConfig.mapMaxZoom)
+  const effectiveMin = layer.minZoom ?? defaultMin
+  const effectiveMax = layer.maxZoom ?? defaultMax
 
   return (
     <div
@@ -75,6 +81,54 @@ export const LayerItem = ({ layer, onToggle }: Props) => {
                 {layer.crs.join(', ')}
               </p>
             )}
+
+            <div className="flex flex-col">
+              <p className="font-semibold">Zoom</p>
+              <div className="grid grid-cols-2 gap-2">
+                <label className="flex items-center">
+                  <span className="mr-2 font-semibold">Min:</span>
+                  <input
+                    type="number"
+                    min={appConfig.mapMinZoom}
+                    max={appConfig.mapMaxZoom}
+                    value={effectiveMin}
+                    onChange={(e) => {
+                      const raw = Number(e.target.value)
+                      const globalMin = Number(appConfig.mapMinZoom)
+                      const globalMax = Number(appConfig.mapMaxZoom)
+                      let next = Number.isNaN(raw) ? defaultMin : raw
+                      if (next < globalMin) next = globalMin
+                      if (next > globalMax) next = globalMax
+                      let nextMax = layer.maxZoom ?? defaultMax
+                      if (next > nextMax) nextMax = next
+                      onZoomChange?.(next, nextMax)
+                    }}
+                    className="w-full bg-white p-0.5 rounded"
+                  />
+                </label>
+                <label className="flex items-center">
+                  <span className="mr-2 font-semibold">Max:</span>
+                  <input
+                    type="number"
+                    min={appConfig.mapMinZoom}
+                    max={appConfig.mapMaxZoom}
+                    value={effectiveMax}
+                    onChange={(e) => {
+                      const raw = Number(e.target.value)
+                      const globalMin = Number(appConfig.mapMinZoom)
+                      const globalMax = Number(appConfig.mapMaxZoom)
+                      let next = Number.isNaN(raw) ? defaultMax : raw
+                      if (next < globalMin) next = globalMin
+                      if (next > globalMax) next = globalMax
+                      let nextMin = layer.minZoom ?? defaultMin
+                      if (next < nextMin) nextMin = next
+                      onZoomChange?.(nextMin, next)
+                    }}
+                    className="w-full bg-white p-0.5 rounded"
+                  />
+                </label>
+              </div>
+            </div>
           </div>
         )}
       </div>
