@@ -2,25 +2,45 @@ import type {
   ILogger,
   LoggerMessage,
 } from '@/shared/interfaces/logger.interface'
+import { appConfig } from '@/shared/config'
 
 export class ConsoleLogger implements ILogger {
+  private shouldLog(
+    level: 'debug' | 'info' | 'warn' | 'error' | 'fatal',
+  ): boolean {
+    if (appConfig.isProduction) {
+      return level === 'fatal'
+    }
+    return true
+  }
+
   debug(message: LoggerMessage) {
-    console.debug('[DEBUG]', message)
+    if (this.shouldLog('debug')) {
+      console.debug('[DEBUG]', message)
+    }
   }
 
   info(message: LoggerMessage) {
-    console.info('[INFO]', message)
+    if (this.shouldLog('info')) {
+      console.info('[INFO]', message)
+    }
   }
 
   warn(message: LoggerMessage) {
-    console.warn('[WARN]', message)
+    if (this.shouldLog('warn')) {
+      console.warn('[WARN]', message)
+    }
   }
 
   error(message: LoggerMessage) {
-    console.error('[ERROR]', message)
+    if (this.shouldLog('error')) {
+      console.error('[ERROR]', message)
+    }
   }
 
   fatal(message: LoggerMessage) {
-    console.error('[FATAL]', message)
+    if (this.shouldLog('fatal')) {
+      console.error('[FATAL]', message)
+    }
   }
 }
