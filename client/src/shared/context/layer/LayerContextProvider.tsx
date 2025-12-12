@@ -12,9 +12,49 @@ import type { LayerInfo } from '@/shared/context/layer/LayerContext'
 import { geoserverService, logger } from '@/shared/providers'
 import { GeoserverConfigContext } from '@/shared/context/geoserver-config/GeoserverConfigContext'
 import { GeoserverAuthRequiredError } from '@/shared/errors/geoserver-auth-required.error'
+import { defaultMinZoom } from '@/shared/lib/consts'
 
 interface LayerContextProviderProps {
   children?: React.ReactNode
+}
+
+const LAYER_ZOOM_STORAGE_KEY = 'geoserver-viewer:layer-zoom:'
+
+const getLayerZoomFromStorage = (
+  layerName: string,
+): { minZoom?: number; maxZoom?: number } => {
+  try {
+    const stored = localStorage.getItem(`${LAYER_ZOOM_STORAGE_KEY}${layerName}`)
+    if (stored) {
+      return JSON.parse(stored)
+    }
+  } catch (error) {
+    logger.warn({
+      msg: 'Failed to load layer zoom from localStorage',
+      layerName,
+      error,
+    })
+  }
+  return {}
+}
+
+const saveLayerZoomToStorage = (
+  layerName: string,
+  minZoom: number,
+  maxZoom: number,
+): void => {
+  try {
+    localStorage.setItem(
+      `${LAYER_ZOOM_STORAGE_KEY}${layerName}`,
+      JSON.stringify({ minZoom, maxZoom }),
+    )
+  } catch (error) {
+    logger.warn({
+      msg: 'Failed to save layer zoom to localStorage',
+      layerName,
+      error,
+    })
+  }
 }
 
 export const LayerContextProvider = ({
@@ -58,6 +98,8 @@ export const LayerContextProvider = ({
 
   const setLayerZooms = useCallback(
     (layerName: string, minZoom: number, maxZoom: number) => {
+      saveLayerZoomToStorage(layerName, minZoom, maxZoom)
+
       setLayersMap((prev) => {
         const copy = new Map(prev)
         const existing = copy.get(layerName)
@@ -106,6 +148,8 @@ export const LayerContextProvider = ({
         rawLayers.forEach((l) => {
           const name = l.name || l.title || l.short
 
+          const savedZoom = getLayerZoomFromStorage(name)
+
           newLayers.set(name, {
             name,
             short: l.short,
@@ -119,8 +163,8 @@ export const LayerContextProvider = ({
             dateCreated: l.dateCreated,
             dateModified: l.dateModified,
             enabled: false,
-            minZoom: appConfig.mapMinZoom,
-            maxZoom: appConfig.mapMaxZoom,
+            minZoom: savedZoom.minZoom ?? Math.max(defaultMinZoom, appConfig.mapMinZoom),
+            maxZoom: savedZoom.maxZoom ?? appConfig.mapMaxZoom,
             color: l.color,
           })
         })
