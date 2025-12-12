@@ -80,8 +80,10 @@ Para probar la app con Docker Compose.
 
 - Usa las plantillas `.env.template` en la raíz y en `client/.env.template` y `server/.env.template`.
 - Algunas variables comunes:
-  - `APP_PORT` — Puerto en host donde se sirve el cliente (ej. 4000)
-  - `SERVER_PORT` — Puerto del servidor (ej. 3001)
+  - `APP_PORT` — Puerto en host donde se sirve la aplicación completa usando docker
+  - `APP_NAME` - Nombre de la aplicación que se mostrará en los logs y web
+  - `CORS_ENABLED` - Activar configuración de cors (permite que el navegador se comunique con el backend)
+  - `CORS_ALLOWED_ORIGINS` - Dominios que el servidor aceptará separados por coma (ej, 'https://example.com,https://www.example.com')
   - `VITE_PROXY_URL` — URL base para que el cliente alcance el API (ej. http://localhost:3001/api/proxy)
   - `VITE_MAP_CENTER`, `VITE_MAP_ZOOM`, `VITE_MAP_STYLE` — configuración del mapa
 
