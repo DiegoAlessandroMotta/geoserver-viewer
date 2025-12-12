@@ -27,7 +27,7 @@ export const TileLoggerProvider = ({
   children,
 }: TileLoggerProviderProps) => {
   const [logs, setLogs] = useState<TileLogEntry[]>([])
-  const [visible, setVisible] = useState(false)
+  const [visible, setVisible] = useState(true)
 
   const addLog = useCallback(
     (msg: WSProxyResponseMessage) => {
