@@ -2,7 +2,9 @@ import { ChevronDownIcon } from '@/shared/components/icons/ChevronDownIcon'
 import { appConfig } from '@/shared/config'
 import type { LayerInfo } from '@/shared/context/layer/LayerContext'
 import { cn } from '@/shared/lib/utils'
-import { useState } from 'react'
+import { useState, useEffect, useRef } from 'react'
+import { useDebounce } from '@uidotdev/usehooks'
+import { defaultMinZoom } from '@/shared/lib/consts'
 
 interface Props {
   layer: LayerInfo
@@ -12,10 +14,63 @@ interface Props {
 
 export const LayerItem = ({ layer, onToggle, onZoomChange }: Props) => {
   const [isExpanded, setIsExpanded] = useState(false)
-  const defaultMin = Math.max(14, Number(appConfig.mapMinZoom))
-  const defaultMax = Number(appConfig.mapMaxZoom)
-  const effectiveMin = layer.minZoom ?? defaultMin
-  const effectiveMax = layer.maxZoom ?? defaultMax
+  const globalMinZoom = appConfig.mapMinZoom
+  const globalMaxZoom = appConfig.mapMaxZoom
+
+  const [minLocal, setMinLocal] = useState(
+    layer.minZoom ?? Math.max(defaultMinZoom, globalMinZoom),
+  )
+  const [maxLocal, setMaxLocal] = useState(layer.maxZoom ?? globalMaxZoom)
+
+  const prevLayerIdRef = useRef(layer.name)
+  useEffect(() => {
+    if (layer.name !== prevLayerIdRef.current) {
+      prevLayerIdRef.current = layer.name
+      // eslint-disable-next-line react-hooks/set-state-in-effect
+      setMinLocal(layer.minZoom ?? globalMinZoom)
+      setMaxLocal(layer.maxZoom ?? globalMaxZoom)
+    }
+  }, [layer.name, layer.minZoom, layer.maxZoom, globalMinZoom, globalMaxZoom])
+
+  const debouncedMin = useDebounce(minLocal, 300)
+  const debouncedMax = useDebounce(maxLocal, 300)
+
+  useEffect(() => {
+    const currentMin = layer.minZoom ?? globalMinZoom
+    const currentMax = layer.maxZoom ?? globalMaxZoom
+
+    if (debouncedMin !== currentMin || debouncedMax !== currentMax) {
+      onZoomChange?.(debouncedMin, debouncedMax)
+    }
+  }, [
+    debouncedMin,
+    debouncedMax,
+    layer.minZoom,
+    layer.maxZoom,
+    globalMinZoom,
+    globalMaxZoom,
+    onZoomChange,
+  ])
+
+  const handleMinChange = (value: number) => {
+    const globalMin = Math.max(globalMinZoom, Number(appConfig.mapMinZoom))
+    const globalMax = Number(globalMaxZoom)
+    const next = Math.max(globalMin, Math.min(globalMax, value))
+    setMinLocal(next)
+    if (next > maxLocal) {
+      setMaxLocal(next)
+    }
+  }
+
+  const handleMaxChange = (value: number) => {
+    const globalMin = Math.max(globalMinZoom, Number(appConfig.mapMinZoom))
+    const globalMax = Number(globalMaxZoom)
+    const next = Math.max(globalMin, Math.min(globalMax, value))
+    setMaxLocal(next)
+    if (next < minLocal) {
+      setMinLocal(next)
+    }
+  }
 
   return (
     <div
@@ -49,7 +104,7 @@ export const LayerItem = ({ layer, onToggle, onZoomChange }: Props) => {
           <button
             onClick={() => setIsExpanded(!isExpanded)}
             className={cn(
-              `shrink-0 aspect-square size-8 font-semibold rounded text-gray-800 cursor-pointer hover:bg-black/10 mr-0.5`,
+              'shrink-0 aspect-square size-8 font-semibold rounded text-gray-800 cursor-pointer hover:bg-black/10 mr-0.5',
             )}
             title={isExpanded ? 'Mostrar detalles' : 'Ocultar detalles'}
           >
@@ -89,20 +144,10 @@ export const LayerItem = ({ layer, onToggle, onZoomChange }: Props) => {
                   <span className="mr-2 font-semibold">Min:</span>
                   <input
                     type="number"
-                    min={appConfig.mapMinZoom}
-                    max={appConfig.mapMaxZoom}
-                    value={effectiveMin}
-                    onChange={(e) => {
-                      const raw = Number(e.target.value)
-                      const globalMin = Number(appConfig.mapMinZoom)
-                      const globalMax = Number(appConfig.mapMaxZoom)
-                      let next = Number.isNaN(raw) ? defaultMin : raw
-                      if (next < globalMin) next = globalMin
-                      if (next > globalMax) next = globalMax
-                      let nextMax = layer.maxZoom ?? defaultMax
-                      if (next > nextMax) nextMax = next
-                      onZoomChange?.(next, nextMax)
-                    }}
+                    min={globalMinZoom}
+                    max={globalMaxZoom}
+                    value={minLocal}
+                    onChange={(e) => handleMinChange(Number(e.target.value))}
                     className="w-full bg-white p-0.5 rounded"
                   />
                 </label>
@@ -110,20 +155,10 @@ export const LayerItem = ({ layer, onToggle, onZoomChange }: Props) => {
                   <span className="mr-2 font-semibold">Max:</span>
                   <input
                     type="number"
-                    min={appConfig.mapMinZoom}
-                    max={appConfig.mapMaxZoom}
-                    value={effectiveMax}
-                    onChange={(e) => {
-                      const raw = Number(e.target.value)
-                      const globalMin = Number(appConfig.mapMinZoom)
-                      const globalMax = Number(appConfig.mapMaxZoom)
-                      let next = Number.isNaN(raw) ? defaultMax : raw
-                      if (next < globalMin) next = globalMin
-                      if (next > globalMax) next = globalMax
-                      let nextMin = layer.minZoom ?? defaultMin
-                      if (next < nextMin) nextMin = next
-                      onZoomChange?.(nextMin, next)
-                    }}
+                    min={globalMinZoom}
+                    max={globalMaxZoom}
+                    value={maxLocal}
+                    onChange={(e) => handleMaxChange(Number(e.target.value))}
                     className="w-full bg-white p-0.5 rounded"
                   />
                 </label>

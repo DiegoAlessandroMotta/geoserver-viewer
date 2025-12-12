@@ -1,5 +1,6 @@
 import { appConfig } from '@/shared/config'
 import type { LayerInfo } from '@/shared/context/layer/LayerContext'
+import { defaultMinZoom } from '@/shared/lib/consts'
 import { geoserverService } from '@/shared/providers'
 import { Layer, Source } from 'react-map-gl/maplibre'
 
@@ -20,7 +21,8 @@ export const CustomLayer = ({ layer }: Props) => {
   const baseColor = layer.color
   const outlineColor = '#000000'
 
-  const minZoom = layer.minZoom ?? appConfig.mapMinZoom
+  const minZoom =
+    layer.minZoom ?? Math.max(defaultMinZoom, appConfig.mapMinZoom)
   const maxZoom = layer.maxZoom ?? appConfig.mapMaxZoom
 
   return (
