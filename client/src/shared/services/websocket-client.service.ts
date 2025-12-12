@@ -144,7 +144,7 @@ export class WebsocketClient {
   }
 
   private handleMessage = (msg: WSMessage) => {
-    this.logger?.debug({ msg: 'WebsocketClient: message received', data: msg })
+    // this.logger?.debug({ msg: 'WebsocketClient: message received', data: msg })
 
     if (msg.type === 'session-id') {
       const sessionId: string | undefined = (msg as any).sessionId
@@ -159,14 +159,14 @@ export class WebsocketClient {
     }
 
     if (msg.type === 'proxy-response') {
-      const proxyMsg = msg as WSProxyResponseMessage
-      this.logger?.debug({
-        msg: 'Proxy response',
-        url: proxyMsg.url,
-        status: proxyMsg.status,
-        cache: proxyMsg.cacheResult,
-        headers: proxyMsg.headers,
-      })
+      // const proxyMsg = msg as WSProxyResponseMessage
+      // this.logger?.debug({
+      //   msg: 'Proxy response',
+      //   url: proxyMsg.url,
+      //   status: proxyMsg.status,
+      //   cache: proxyMsg.cacheResult,
+      //   headers: proxyMsg.headers,
+      // })
       return
     }
 
