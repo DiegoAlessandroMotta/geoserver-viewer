@@ -6,18 +6,29 @@ export class PinoLogger implements ILogger {
   private readonly logger: Logger
 
   constructor(options?: pino.LoggerOptions) {
+    const transportOption = (() => {
+      if (serverConfig.isProduction) return undefined
+
+      try {
+        require.resolve('pino-pretty')
+
+        return {
+          target: 'pino-pretty',
+          options: {
+            colorize: true,
+            translateTime: 'HH:MM:ss Z',
+            ignore: 'pid,hostname',
+          },
+        }
+      } catch {
+        console.warn('pino-pretty not found; using default pino transport')
+        return undefined
+      }
+    })()
+
     this.logger = pino({
       level: serverConfig.logLevel,
-      transport: !serverConfig.isProduction
-        ? {
-            target: 'pino-pretty',
-            options: {
-              colorize: true,
-              translateTime: 'HH:MM:ss Z',
-              ignore: 'pid,hostname',
-            },
-          }
-        : undefined,
+      transport: transportOption,
       ...options,
     })
   }
