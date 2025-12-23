@@ -10,7 +10,8 @@
     ],
     "module": "ESNext",
     "types": [
-      "vite/client"
+      "vite/client",
+      "vitest"
     ],
     "skipLibCheck": true,
     /* Path mapping */
@@ -36,6 +37,7 @@
     "noUncheckedSideEffectImports": true
   },
   "include": [
-    "src"
+    "src",
+    "tests"
   ]
 }
