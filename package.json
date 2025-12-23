@@ -12,6 +12,7 @@
     "lint-fix:server": "pnpm -F server lint-fix",
     "format:server": "pnpm -F server format",
     "format-check:server": "pnpm -F server format-check",
+    "test:server": "pnpm -F server test",
     "dev:client": "pnpm -F client dev",
     "build:client": "pnpm -F client build",
     "preview:client": "pnpm -F client preview",
