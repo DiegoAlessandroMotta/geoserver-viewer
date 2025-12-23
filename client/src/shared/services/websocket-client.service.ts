@@ -17,21 +17,36 @@ export type WSMessage = { type: string; [key: string]: any }
 
 export interface WebsocketClientOptions {
   logger?: ILogger
-  configManager?: GeoserverConfigManagerService
+  configManager: GeoserverConfigManagerService
+  WSClass?: typeof WebSocket
+  location?: Pick<Location, 'origin' | 'protocol' | 'host'>
+  config: Pick<typeof appConfig, 'proxyUrl' | 'basePath'>
 }
 
 export class WebsocketClient {
   private ws?: WebSocket
   private reconnectAttempts = 0
-  private readonly maxReconnectAttempts = 10
   private isManualClose = false
-  private readonly logger?: ILogger
-  private readonly configManager?: GeoserverConfigManagerService
+  private readonly maxReconnectAttempts = 10
   private readonly messageListeners: Set<(msg: WSMessage) => void> = new Set()
+  private readonly logger?: WebsocketClientOptions['logger']
+  private readonly configManager: WebsocketClientOptions['configManager']
+  private readonly WSClass: NonNullable<WebsocketClientOptions['WSClass']>
+  private readonly location: NonNullable<WebsocketClientOptions['location']>
+  private readonly config: WebsocketClientOptions['config']
 
-  constructor({ logger, configManager }: WebsocketClientOptions = {}) {
+  constructor({
+    logger,
+    configManager,
+    WSClass = WebSocket,
+    location = window.location,
+    config,
+  }: WebsocketClientOptions) {
     this.logger = logger
     this.configManager = configManager
+    this.WSClass = WSClass
+    this.location = location
+    this.config = config
   }
 
   public onMessage = (listener: (msg: WSMessage) => void) => {
@@ -41,16 +56,16 @@ export class WebsocketClient {
 
   private getWsUrl() {
     try {
-      const base = appConfig.proxyUrl || window.location.origin
+      const base = this.config?.proxyUrl || this.location.origin
       const url = new URL(base)
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
-      const basePath = appConfig.basePath ?? ''
+      const basePath = this.config.basePath ?? ''
       url.pathname = (basePath + '/ws').replace(/\/+/g, '/')
       return url.toString()
     } catch {
-      const protocol = window.location.protocol === 'https:' ? 'wss' : 'ws'
-      const basePath = appConfig.basePath ?? ''
-      return `${protocol}://${window.location.host}${basePath}/ws`.replace(
+      const protocol = this.location.protocol === 'https:' ? 'wss' : 'ws'
+      const basePath = this.config.basePath ?? ''
+      return `${protocol}://${this.location.host}${basePath}/ws`.replace(
         /\/+/g,
         '/',
       )
@@ -58,7 +73,7 @@ export class WebsocketClient {
   }
 
   public connect = () => {
-    if (this.ws && this.ws.readyState === WebSocket.OPEN) {
+    if (this.ws && this.ws.readyState === this.WSClass.OPEN) {
       return
     }
 
@@ -67,7 +82,7 @@ export class WebsocketClient {
     this.logger?.debug({ msg: 'WebsocketClient: connecting', wsUrl })
 
     try {
-      this.ws = new WebSocket(wsUrl)
+      this.ws = new this.WSClass(wsUrl)
 
       this.ws.onopen = () => {
         this.reconnectAttempts = 0
@@ -134,7 +149,7 @@ export class WebsocketClient {
   }
 
   public send = (message: WSMessage) => {
-    if (!this.ws || this.ws.readyState !== WebSocket.OPEN) return
+    if (!this.ws || this.ws.readyState !== this.WSClass.OPEN) return
     try {
       this.ws.send(JSON.stringify(message))
     } catch (error) {

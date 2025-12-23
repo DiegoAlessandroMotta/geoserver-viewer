@@ -18,6 +18,7 @@ export const geoserverService = new GeoserverService({
 export const websocketClient = new WebsocketClient({
   logger,
   configManager: geoserverConfigService,
+  config: appConfig,
 })
 
 websocketClient.connect()
