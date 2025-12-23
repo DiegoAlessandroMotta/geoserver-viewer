@@ -9,6 +9,7 @@ export interface WSProxyResponseMessage {
   status: number
   cacheResult: string | null
   viaProxy: boolean
+  durationMs: number | null
   headers: Record<string, any>
 }
 
@@ -81,9 +82,7 @@ export class WebsocketClient {
           this.messageListeners.forEach((l) => {
             try {
               l(payload)
-            } catch {
-              // ignore
-            }
+            } catch {}
           })
         } catch (error) {
           this.logger?.warn({ msg: 'WebsocketClient: invalid message', error })
@@ -159,14 +158,6 @@ export class WebsocketClient {
     }
 
     if (msg.type === 'proxy-response') {
-      // const proxyMsg = msg as WSProxyResponseMessage
-      // this.logger?.debug({
-      //   msg: 'Proxy response',
-      //   url: proxyMsg.url,
-      //   status: proxyMsg.status,
-      //   cache: proxyMsg.cacheResult,
-      //   headers: proxyMsg.headers,
-      // })
       return
     }
 

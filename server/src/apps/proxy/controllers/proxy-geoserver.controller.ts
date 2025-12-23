@@ -129,6 +129,7 @@ export class ProxyGeoserverController {
         status: response.status,
         cacheResult,
         viaProxy: true,
+        durationMs: response.durationMs,
         headers: {
           'geowebcache-cache-result': cacheResult,
         },

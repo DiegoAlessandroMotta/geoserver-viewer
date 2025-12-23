@@ -8,6 +8,7 @@ export interface ProxyResponseMessage {
   status: number
   cacheResult: string | null
   viaProxy: boolean
+  durationMs: number
   headers: {
     'geowebcache-cache-result': string | null
   }

@@ -11,6 +11,7 @@ export interface ProxyGeoServerResponse {
   status: number
   headers: Headers
   body: ReadableStream<Uint8Array> | null
+  durationMs: number
 }
 
 export class ProxyGeoServerUseCase {
@@ -35,15 +36,18 @@ export class ProxyGeoServerUseCase {
     const { targetUrl, method, headers } = request
 
     try {
+      const start = Date.now()
       const response = await fetch(targetUrl, {
         headers,
         method,
       })
+      const durationMs = Date.now() - start
 
       return {
         status: response.status,
         headers: response.headers,
         body: response.body,
+        durationMs,
       }
     } catch (error) {
       const errorMessage =
