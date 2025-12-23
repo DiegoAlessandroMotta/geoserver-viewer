@@ -1,5 +1,5 @@
 import type { ILogger } from '@/shared/interfaces/logger.interface'
-import type { GeoserverConfigManagerService } from '@/shared/services/geoserver-config-manager.service'
+import type { GeoserverConfigManagerService } from '@/shared/services/geoserver/geoserver-config-manager.service'
 import { generateSHA1HexHash, randomColorFromString } from '@/shared/lib/utils'
 import { GeoserverHttpClient } from '@/shared/services/geoserver/geoserver-http.client'
 import { GeoserverParser } from '@/shared/services/geoserver/geoserver-parser'

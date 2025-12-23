@@ -1,6 +1,6 @@
 import { appConfig } from '@/shared/config'
 import type { ILogger } from '@/shared/interfaces/logger.interface'
-import type { GeoserverConfigManagerService } from '@/shared/services/geoserver-config-manager.service'
+import type { GeoserverConfigManagerService } from '@/shared/services/geoserver/geoserver-config-manager.service'
 
 export interface WSProxyResponseMessage {
   type: 'proxy-response'

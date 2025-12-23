@@ -1,5 +1,5 @@
 import { createContext } from 'react'
-import type { GeoserverCredentials } from '@/shared/services/geoserver-config-manager.service'
+import type { GeoserverCredentials } from '@/shared/services/geoserver/geoserver-config-manager.service'
 
 export interface GeoserverConfig {
   geoserverUrl: string | null

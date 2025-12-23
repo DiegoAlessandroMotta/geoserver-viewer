@@ -1,5 +1,5 @@
 import { GeoserverAuthRequiredError } from '@/shared/errors/geoserver-auth-required.error'
-import type { GeoserverConfigManagerService } from '@/shared/services/geoserver-config-manager.service'
+import type { GeoserverConfigManagerService } from '@/shared/services/geoserver/geoserver-config-manager.service'
 
 export class GeoserverHttpClient {
   constructor(
