@@ -4,6 +4,7 @@ import { serverConfig } from '@/shared/config'
 import { ILogger } from '@/shared/interfaces/logger.interface'
 import {
   corsMiddleware,
+  errorHandlerMiddleware,
   loggerMiddleware,
   websocketServer,
 } from '@/shared/providers'
@@ -75,6 +76,8 @@ export class Server {
     )
 
     this._app.use(basePath, this._routes)
+
+    this._app.use(errorHandlerMiddleware.handle)
   }
 
   private configureWebsocketServer(): void {

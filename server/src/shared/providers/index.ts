@@ -4,6 +4,7 @@ import { WebSocketSessionService } from '@/shared/services/websocket-server/webs
 import { LoggerMiddleware } from '@/shared/middlewares/logger.middleware'
 import { CorsMiddleware } from '@/shared/middlewares/cors.middleware'
 import { serverConfig } from '@/shared/config'
+import { ErrorHandlerMiddleware } from '../middlewares/error-handler.middleware'
 
 export const logger = new PinoLogger()
 
@@ -20,3 +21,5 @@ export const loggerMiddleware = new LoggerMiddleware(logger)
 export const corsMiddleware = new CorsMiddleware(
   serverConfig.corsAllowedOrigins,
 )
+
+export const errorHandlerMiddleware = new ErrorHandlerMiddleware(logger)
