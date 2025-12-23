@@ -13,6 +13,7 @@
     "format:server": "pnpm -F server format",
     "format-check:server": "pnpm -F server format-check",
     "test:server": "pnpm -F server test",
+    "test:coverage:server": "pnpm -F server test:coverage",
     "dev:client": "pnpm -F client dev",
     "build:client": "pnpm -F client build",
     "preview:client": "pnpm -F client preview",
