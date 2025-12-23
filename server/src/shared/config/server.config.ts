@@ -15,12 +15,14 @@ function normalizeBasePath(value: string): string {
 export const getServerConfig = () => {
   const environment = get('NODE_ENV').default('production').asString()
   const isProduction = environment === 'production'
+  const isTesting = environment === 'test'
   const basePath = normalizeBasePath(get('BASE_PATH').default('').asString())
 
   return {
     appName: get('APP_NAME').default('proxy-geoserver-viewer').asString(),
     environment,
     isProduction,
+    isTesting,
     host: get('SERVER_HOST').default('0.0.0.0').asString(),
     port: get('SERVER_PORT').default(3001).asPortNumber(),
     basePath,

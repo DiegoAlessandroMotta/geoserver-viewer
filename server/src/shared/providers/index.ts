@@ -1,12 +1,12 @@
-import { PinoLogger } from '@/shared/services/logger/pino.logger'
+import { ProviderFactory } from './factory'
 import { WebSocketServer } from '@/shared/services/websocket-server/ws.service'
 import { WebSocketSessionService } from '@/shared/services/websocket-server/websocket-session.service'
 import { LoggerMiddleware } from '@/shared/middlewares/logger.middleware'
 import { CorsMiddleware } from '@/shared/middlewares/cors.middleware'
 import { serverConfig } from '@/shared/config'
-import { ErrorHandlerMiddleware } from '../middlewares/error-handler.middleware'
+import { ErrorHandlerMiddleware } from '@/shared/middlewares/error-handler.middleware'
 
-export const logger = new PinoLogger()
+export const logger = ProviderFactory.getLogger()
 
 export const websocketSessionService = new WebSocketSessionService(logger)
 
