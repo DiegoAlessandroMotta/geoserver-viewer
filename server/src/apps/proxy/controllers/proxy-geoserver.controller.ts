@@ -3,7 +3,6 @@ import { ILogger } from '@/shared/interfaces/logger.interface'
 import { ProxyGeoServerUseCase } from '@/apps/proxy/use-cases/proxy-geoserver.use-case'
 import { GeoServerUrlValidator } from '@/apps/proxy/validators/geoserver-url.validator'
 import { WebSocketSessionService } from '@/shared/services/websocket-server/websocket-session.service'
-import { AppError } from '@/shared/errors/AppError'
 
 export class ProxyGeoserverController {
   constructor(
@@ -100,14 +99,7 @@ export class ProxyGeoserverController {
 
       res.send()
     } catch (error) {
-      if (error instanceof AppError) {
-        // Pass AppError instances to the next error handler (central middleware)
-        next(error)
-        return
-      }
-
-      // For non-AppError errors, keep previous behavior for connection errors
-      this.handleProxyError(error, res)
+      next(error)
     }
   }
 
@@ -149,37 +141,5 @@ export class ProxyGeoserverController {
         },
       })
     }
-  }
-
-  private handleProxyError = (error: unknown, res: Response): void => {
-    const errorMessage = error instanceof Error ? error.message : String(error)
-
-    const isConnectionRefused =
-      error && typeof error === 'object' && 'code' in error
-        ? (error as Record<string, unknown>).code === 'ECONNREFUSED'
-        : false
-
-    if (isConnectionRefused) {
-      this._logger.warn({
-        message: 'GeoServer is unreachable',
-        context: { error: errorMessage },
-      })
-
-      res.status(502).json({
-        error: 'GeoServer unreachable',
-        message: errorMessage,
-      })
-      return
-    }
-
-    this._logger.error({
-      message: 'Proxy request failed',
-      context: { error: errorMessage },
-    })
-
-    res.status(500).json({
-      error: 'Proxy error',
-      message: 'An error occurred while proxying the request',
-    })
   }
 }

@@ -1,3 +1,4 @@
+import { GeoServerUnreachableError } from '@/shared/errors/geoserver-unreachable.error'
 import { ILogger } from '@/shared/interfaces/logger.interface'
 
 export interface ProxyGeoServerRequest {
@@ -54,6 +55,18 @@ export class ProxyGeoServerUseCase {
           error: errorMessage,
         },
       })
+
+      const isConnectionRefused =
+        error && typeof error === 'object' && 'code' in error
+          ? (error as Record<string, unknown>).code === 'ECONNREFUSED'
+          : false
+
+      if (isConnectionRefused) {
+        throw new GeoServerUnreachableError(
+          errorMessage,
+          error instanceof Error ? error : undefined,
+        )
+      }
 
       throw error
     }

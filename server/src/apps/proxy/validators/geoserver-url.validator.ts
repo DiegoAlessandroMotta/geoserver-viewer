@@ -1,5 +1,7 @@
 import { serverConfig } from '@/shared/config'
 import { GeoServerHostNotAllowedError } from '@/shared/errors/geoserver-host-not-allowed.error'
+import { MissingGeoServerBaseUrlError } from '@/shared/errors/missing-geoserver-baseurl.error'
+import { InvalidGeoServerUrlError } from '@/shared/errors/invalid-geoserver-url.error'
 
 export class GeoServerUrlValidator {
   private static readonly VALID_PROTOCOLS = ['http://', 'https://']
@@ -8,7 +10,7 @@ export class GeoServerUrlValidator {
     hostname: string,
     hostWithPort: string,
   ): boolean {
-    const allowed = serverConfig.geoserverAllowedHosts || ['*']
+    const allowed = serverConfig.geoserverAllowedHosts
 
     if (allowed.includes('*')) return true
 
@@ -25,36 +27,46 @@ export class GeoServerUrlValidator {
     return false
   }
 
-  static validate(headerUrl: string | undefined): string | null {
+  static validate(headerUrl: string | undefined): string {
     if (!headerUrl) {
-      return null
+      throw new MissingGeoServerBaseUrlError()
     }
 
+    let decodedUrl: string
     try {
-      const decodedUrl = decodeURIComponent(headerUrl)
-
-      if (
-        !this.VALID_PROTOCOLS.some((protocol) =>
-          decodedUrl.startsWith(protocol),
-        )
-      ) {
-        return null
-      }
-
-      const parsed = new URL(decodedUrl)
-      const hostname = parsed.hostname
-      const hostWithPort = parsed.port
-        ? `${parsed.hostname}:${parsed.port}`
-        : parsed.hostname
-
-      if (!this.hostIsAllowed(hostname, hostWithPort)) {
-        throw new GeoServerHostNotAllowedError(hostname)
-      }
-
-      return decodedUrl
+      decodedUrl = decodeURIComponent(headerUrl)
     } catch (err) {
-      if (err && err instanceof GeoServerHostNotAllowedError) throw err
-      return null
+      throw new InvalidGeoServerUrlError(
+        headerUrl,
+        err instanceof Error ? err : undefined,
+      )
     }
+
+    if (
+      !this.VALID_PROTOCOLS.some((protocol) => decodedUrl.startsWith(protocol))
+    ) {
+      throw new InvalidGeoServerUrlError(decodedUrl)
+    }
+
+    let parsed: URL
+    try {
+      parsed = new URL(decodedUrl)
+    } catch (err) {
+      throw new InvalidGeoServerUrlError(
+        decodedUrl,
+        err instanceof Error ? err : undefined,
+      )
+    }
+
+    const hostname = parsed.hostname
+    const hostWithPort = parsed.port
+      ? `${parsed.hostname}:${parsed.port}`
+      : parsed.hostname
+
+    if (!this.hostIsAllowed(hostname, hostWithPort)) {
+      throw new GeoServerHostNotAllowedError(hostname)
+    }
+
+    return decodedUrl
   }
 }
