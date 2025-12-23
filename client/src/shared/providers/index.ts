@@ -1,5 +1,5 @@
 import { ConsoleLogger } from '@/shared/services/logger/console.logger'
-import { GeoserverService } from '@/shared/services/geoserver.service'
+import { GeoserverService } from '@/shared/services/geoserver/geoserver.service'
 import { appConfig } from '@/shared/config'
 import { GeoserverConfigManagerService } from '@/shared/services/geoserver-config-manager.service'
 import { WebsocketClient } from '@/shared/services/websocket-client.service'
