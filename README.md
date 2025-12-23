@@ -84,6 +84,7 @@ Para probar la app con Docker Compose.
   - `APP_NAME` - Nombre de la aplicación que se mostrará en los logs y web
   - `CORS_ENABLED` - Activar configuración de cors (permite que el navegador se comunique con el backend)
   - `CORS_ALLOWED_ORIGINS` - Dominios que el servidor aceptará separados por coma (ej, 'https://example.com,https://www.example.com')
+  - `GEOSERVER_ALLOWED_HOSTS` - Lista blanca de hosts permitidos para las peticiones proxy a GeoServer (separados por coma). Ej: 'localhost,127.0.0.1,geoserver.example.com'.
   - `VITE_MAP_CENTER`, `VITE_MAP_ZOOM`, `VITE_MAP_STYLE` — configuración del mapa
 
 ## Linters & Formato

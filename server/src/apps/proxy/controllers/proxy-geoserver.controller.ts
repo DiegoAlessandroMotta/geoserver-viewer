@@ -1,8 +1,9 @@
-import { Request, Response } from 'express'
+import { Request, Response, NextFunction } from 'express'
 import { ILogger } from '@/shared/interfaces/logger.interface'
 import { ProxyGeoServerUseCase } from '@/apps/proxy/use-cases/proxy-geoserver.use-case'
 import { GeoServerUrlValidator } from '@/apps/proxy/validators/geoserver-url.validator'
 import { WebSocketSessionService } from '@/shared/services/websocket-server/websocket-session.service'
+import { AppError } from '@/shared/errors/AppError'
 
 export class ProxyGeoserverController {
   constructor(
@@ -11,7 +12,11 @@ export class ProxyGeoserverController {
     private readonly _wsSessionService: WebSocketSessionService,
   ) {}
 
-  public handle = async (req: Request, res: Response): Promise<void> => {
+  public handle = async (
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> => {
     try {
       const geoServerUrl = GeoServerUrlValidator.validate(
         req.get('X-GeoServer-BaseUrl'),
@@ -95,6 +100,13 @@ export class ProxyGeoserverController {
 
       res.send()
     } catch (error) {
+      if (error instanceof AppError) {
+        // Pass AppError instances to the next error handler (central middleware)
+        next(error)
+        return
+      }
+
+      // For non-AppError errors, keep previous behavior for connection errors
       this.handleProxyError(error, res)
     }
   }

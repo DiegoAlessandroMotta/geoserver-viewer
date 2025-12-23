@@ -26,6 +26,11 @@ export const getServerConfig = () => {
     basePath,
     corsEnabled: get('CORS_ENABLED').default('true').asBool(),
     corsAllowedOrigins: get('CORS_ALLOWED_ORIGINS').default('*').asArray(','),
+    geoserverAllowedHosts: get('GEOSERVER_ALLOWED_HOSTS')
+      .default('*')
+      .asArray(',')
+      .map((h) => h.trim())
+      .filter(Boolean),
     logLevel: get('LOG_LEVEL').default('info').asString(),
   }
 }
