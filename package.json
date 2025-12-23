@@ -27,7 +27,7 @@
     "concurrently": "^9.2.1"
   },
   "private": true,
-  "packageManager": "pnpm@10.25.0",
+  "packageManager": "pnpm@10.26.1",
   "keywords": [],
   "author": "",
   "license": "ISC",
