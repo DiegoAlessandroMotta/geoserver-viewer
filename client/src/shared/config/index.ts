@@ -1,4 +1,4 @@
-function parseCenter(value?: string): { lat: number; lon: number } {
+export function parseCenter(value?: string): { lat: number; lon: number } {
   const defaultVal = {
     lat: -12.046390113132471,
     lon: -77.0427648515243,
@@ -17,7 +17,7 @@ function parseCenter(value?: string): { lat: number; lon: number } {
   return { lat, lon }
 }
 
-function parseProxyUrl(value?: string, basePath?: string): string {
+export function parseProxyUrl(value?: string, basePath?: string): string {
   const defaultProxyPath = '/api/proxy'
   const realPath = ((basePath ?? '') + defaultProxyPath).replace(/\/+/g, '/')
   const defaultVal = window.location.origin + realPath
@@ -47,7 +47,7 @@ function parseProxyUrl(value?: string, basePath?: string): string {
   )
 }
 
-function parseBasePath(value?: string): string {
+export function parseBasePath(value?: string): string {
   if (!value || value.trim().length === 0) {
     return ''
   }

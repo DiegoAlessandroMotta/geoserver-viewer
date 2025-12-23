@@ -138,4 +138,106 @@ describe('WebsocketClient', () => {
 
     expect(logger.warn).toHaveBeenCalled()
   })
+
+  it('schedules reconnect on connect failure and respects attempts', () => {
+    vi.useFakeTimers()
+    const logger = { debug: vi.fn(), warn: vi.fn() }
+
+    class ThrowingWS {
+      constructor() {
+        throw new Error('nope')
+      }
+    }
+
+    const client: any = new WebsocketClient({
+      WSClass: ThrowingWS as any,
+      logger: logger as any,
+      config: { proxyUrl: '', basePath: '' } as any,
+    } as any)
+    client.connect()
+
+    expect(logger.warn).toHaveBeenCalled()
+    vi.advanceTimersByTime(1000)
+    expect(client.reconnectAttempts).toBeGreaterThanOrEqual(1)
+    vi.useRealTimers()
+  })
+
+  it('does not schedule reconnect when max attempts reached', () => {
+    const logger = { debug: vi.fn(), warn: vi.fn() }
+    const client: any = new WebsocketClient({
+      WSClass: MockWS as any,
+      logger: logger as any,
+      config: { proxyUrl: '', basePath: '' } as any,
+    } as any)
+
+    client.reconnectAttempts = 10
+    ;(client as any).scheduleReconnect()
+
+    expect(logger.warn).toHaveBeenCalledWith({
+      msg: 'WebsocketClient: max reconnect attempts reached',
+    })
+  })
+
+  it('disconnect closes socket and prevents reconnect on close', () => {
+    const logger = { debug: vi.fn(), warn: vi.fn() }
+    const client: any = new WebsocketClient({
+      WSClass: MockWS as any,
+      logger: logger as any,
+      config: { proxyUrl: '', basePath: '' } as any,
+    } as any)
+    client.connect()
+
+    const inst = MockWS.lastInstance
+    const schedSpy = vi.spyOn(client as any, 'scheduleReconnect')
+
+    client.disconnect()
+    expect(inst.close).toHaveBeenCalled()
+
+    inst.onclose?.({ code: 1000, reason: 'client disconnect' })
+    expect(schedSpy).not.toHaveBeenCalled()
+  })
+
+  it('send warns when send throws and onerror warns', () => {
+    const logger = { debug: vi.fn(), warn: vi.fn() }
+    const client: any = new WebsocketClient({
+      WSClass: MockWS as any,
+      logger: logger as any,
+      config: { proxyUrl: '', basePath: '' } as any,
+    } as any)
+    client.connect()
+
+    const inst = MockWS.lastInstance
+    inst.send = () => {
+      throw new Error('boom')
+    }
+
+    client.send({ type: 'x' })
+    expect(logger.warn).toHaveBeenCalled()
+
+    inst.onerror?.(new Error('socket'))
+    expect(logger.warn).toHaveBeenCalled()
+  })
+
+  it('handles proxy-response silently and logs generic messages', () => {
+    const logger = { debug: vi.fn(), warn: vi.fn() }
+    const client: any = new WebsocketClient({
+      WSClass: MockWS as any,
+      logger: logger as any,
+      config: { proxyUrl: '', basePath: '' } as any,
+    } as any)
+    client.connect()
+
+    const inst = MockWS.lastInstance
+    inst.onmessage?.({
+      data: JSON.stringify({ type: 'proxy-response', url: 'u' }),
+    })
+    expect(logger.debug as any).not.toHaveBeenCalledWith(
+      expect.objectContaining({ msg: 'WebsocketClient: generic message' }),
+    )
+
+    inst.onmessage?.({ data: JSON.stringify({ type: 'other', x: 1 }) })
+    expect(logger.debug as any).toHaveBeenCalledWith(
+      expect.objectContaining({ msg: 'WebsocketClient: generic message' }),
+    )
+  })
 })
