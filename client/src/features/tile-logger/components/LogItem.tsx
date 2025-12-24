@@ -23,7 +23,9 @@ export const LogItem: React.FC<{ item: TileLogEntry }> = ({ item }) => {
       x = numericParts[1]
       y = numericParts[2].replace('.pbf', '')
     }
-  } catch {}
+  } catch {
+    // ignore malformed URLs or unexpected targets
+  }
 
   const fromCache = item.cacheResult === 'HIT'
   const lowThreshold = 2000

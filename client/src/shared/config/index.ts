@@ -82,4 +82,5 @@ export const appConfig = {
       'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
   ),
   isProduction: Boolean(import.meta.env.PROD),
+  isTest: import.meta.env.MODE === 'test',
 } as const

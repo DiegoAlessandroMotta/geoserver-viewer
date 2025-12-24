@@ -97,9 +97,12 @@ export class WebsocketClient {
           this.messageListeners.forEach((l) => {
             try {
               l(payload)
-            } catch {}
+            } catch {
+              // listener threw — ignore to avoid breaking other listeners
+            }
           })
         } catch (error) {
+          // invalid JSON payloads are ignored but logged
           this.logger?.warn({ msg: 'WebsocketClient: invalid message', error })
         }
       }

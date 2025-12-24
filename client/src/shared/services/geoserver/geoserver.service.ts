@@ -79,74 +79,68 @@ export class GeoserverService {
   public fetchWMSLayers = async (workspace: string) => {
     this.invalidateCache()
 
-    try {
-      const layersList = await this.layerRepo.fetchAllLayersFromREST()
-      if (layersList.length === 0) {
-        this.logger.warn({ msg: 'No layers found from REST API' })
-        return []
-      }
-
-      const capabilities = await this.wmsCache.get()
-
-      this.executor && this.executor
-
-      const results = await this.executor.run(
-        layersList,
-        async (layerInfo: any) => {
-          const layerName = layerInfo.name
-
-          const [layerWorkspace, ...nameParts] = layerName.split(':')
-          const shortName = nameParts.join(':')
-
-          const [details, crs, hexHash] = await Promise.all([
-            this.layerRepo.fetchLayerDetails(layerName),
-            this.parser.extractCRSFromXML(capabilities ?? null, layerName),
-            generateSHA1HexHash(layerName),
-          ])
-
-          if (!details?.layer) {
-            this.logger.warn({
-              msg: `No details found for layer: ${layerName}`,
-            })
-            return null
-          }
-
-          const layer = details.layer
-          const resourceInfo = this.parseResourceInfo(
-            layer.resource?.href || layer.resource?.['@href'],
-          )
-          const color = randomColorFromString(hexHash)
-
-          return {
-            name: layerName,
-            title: layer.title || layer.name || shortName,
-            short: shortName,
-            workspace: resourceInfo.workspace || layerWorkspace,
-            store: resourceInfo.store,
-            type: layer.type,
-            fullName: layer.name,
-            dateCreated: layer.dateCreated,
-            dateModified: layer.dateModified,
-            defaultStyle: layer.defaultStyle?.name,
-            crs,
-            color,
-          }
-        },
-      )
-
-      const detailedLayers = results.filter((layer) => layer !== null)
-
-      // Keep debug logs compatible with previous behavior
-      this.logger.debug({
-        msg: `fetchWMSLayers: found ${detailedLayers.length} layers (workspace=${workspace})`,
-      })
-      if (detailedLayers.length > 0)
-        this.logger.debug({ msg: 'layers', data: detailedLayers })
-
-      return detailedLayers
-    } catch (error) {
-      // rethrow to let upper layers handle it (same as before)
-      throw error
+    const layersList = await this.layerRepo.fetchAllLayersFromREST()
+    if (layersList.length === 0) {
+      this.logger.warn({ msg: 'No layers found from REST API' })
+      return []
     }
+
+    const capabilities = await this.wmsCache.get()
+
+    const results = await this.executor.run(
+      layersList,
+      async (layerInfo: any) => {
+        const layerName = layerInfo.name
+
+        const [layerWorkspace, ...nameParts] = layerName.split(':')
+        const shortName = nameParts.join(':')
+
+        const [details, crs, hexHash] = await Promise.all([
+          this.layerRepo.fetchLayerDetails(layerName),
+          this.parser.extractCRSFromXML(capabilities ?? null, layerName),
+          generateSHA1HexHash(layerName),
+        ])
+
+        if (!details?.layer) {
+          this.logger.warn({
+            msg: `No details found for layer: ${layerName}`,
+          })
+          return null
+        }
+
+        const layer = details.layer
+        const resourceInfo = this.parseResourceInfo(
+          layer.resource?.href || layer.resource?.['@href'],
+        )
+        const color = randomColorFromString(hexHash)
+
+        return {
+          name: layerName,
+          title: layer.title || layer.name || shortName,
+          short: shortName,
+          workspace: resourceInfo.workspace || layerWorkspace,
+          store: resourceInfo.store,
+          type: layer.type,
+          fullName: layer.name,
+          dateCreated: layer.dateCreated,
+          dateModified: layer.dateModified,
+          defaultStyle: layer.defaultStyle?.name,
+          crs,
+          color,
+        }
+      },
+    )
+
+    const detailedLayers = results.filter((layer) => layer !== null)
+
+    // Keep debug logs compatible with previous behavior
+    this.logger.debug({
+      msg: `fetchWMSLayers: found ${detailedLayers.length} layers (workspace=${workspace})`,
+    })
+    if (detailedLayers.length > 0)
+      this.logger.debug({ msg: 'layers', data: detailedLayers })
+
+    return detailedLayers
+    // let any error bubble up to callers
   }
 }
