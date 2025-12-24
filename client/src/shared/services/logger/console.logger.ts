@@ -8,6 +8,7 @@ export class ConsoleLogger implements ILogger {
   private shouldLog(
     level: 'debug' | 'info' | 'warn' | 'error' | 'fatal',
   ): boolean {
+    if (appConfig.isTest) return false
     if (appConfig.isProduction) {
       return level === 'fatal'
     }

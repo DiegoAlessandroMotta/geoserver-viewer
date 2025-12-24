@@ -13,11 +13,13 @@ describe('ConsoleLogger', () => {
     spyInfo = vi.spyOn(console, 'info').mockImplementation(() => {})
     spyWarn = vi.spyOn(console, 'warn').mockImplementation(() => {})
     spyError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    ;(appConfig as any).isTest = false
   })
 
   afterEach(() => {
     vi.restoreAllMocks()
     ;(appConfig as any).isProduction = false
+    ;(appConfig as any).isTest = true
   })
 
   it('logs debug/info/warn/error in non-production', () => {
@@ -48,6 +50,6 @@ describe('ConsoleLogger', () => {
     expect(spyDebug).not.toHaveBeenCalled()
     expect(spyInfo).not.toHaveBeenCalled()
     expect(spyWarn).not.toHaveBeenCalled()
-    expect(spyError).toHaveBeenCalledTimes(1) // fatal uses console.error
+    expect(spyError).toHaveBeenCalledTimes(1)
   })
 })
