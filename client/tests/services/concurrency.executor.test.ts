@@ -27,4 +27,17 @@ describe('ConcurrencyExecutor', () => {
     expect(result).toEqual([2, null, 4])
     expect(logger.error as any).toHaveBeenCalled()
   })
+
+  it('returns empty array when items is empty', async () => {
+    const exec = new ConcurrencyExecutor<number, number>(2)
+    const res = await exec.run([], async () => 1)
+    expect(res).toEqual([])
+  })
+
+  it('processes items when maxConcurrent is zero (uses at least 1 worker)', async () => {
+    const exec = new ConcurrencyExecutor<number, number>(0)
+    const items = [1, 2, 3]
+    const res = await exec.run(items, async (n) => n * 10)
+    expect(res).toEqual([10, 20, 30])
+  })
 })

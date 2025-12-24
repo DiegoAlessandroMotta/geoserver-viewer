@@ -88,4 +88,59 @@ describe('GeoserverService', () => {
     expect(res).toEqual([])
     expect(logger.warn).toHaveBeenCalled()
   })
+
+  it('parses resource href without @href and extracts workspace/store', async () => {
+    ;(svc as any).layerRepo.fetchAllLayersFromREST = vi
+      .fn()
+      .mockResolvedValue([{ name: 'prefix:layerx' }])
+    ;(svc as any).layerRepo.fetchLayerDetails = vi.fn().mockResolvedValue({
+      layer: {
+        name: 'prefix:layerx',
+        title: 't',
+        resource: { href: '/workspaces/ws2/datastores/store2' },
+        type: 'VECTOR',
+      },
+    })
+    ;(svc as any).wmsCache.get = vi.fn().mockResolvedValue({})
+    ;(svc as any).parser.extractCRSFromXML = vi.fn().mockReturnValue([])
+
+    const res = await svc.fetchWMSLayers('ws')
+    expect(res.length).toBe(1)
+    expect(res[0]).toHaveProperty('workspace', 'ws2')
+    expect(res[0]).toHaveProperty('store', 'store2')
+  })
+
+  it('falls back to layer namespace when resource parsing fails', async () => {
+    ;(svc as any).layerRepo.fetchAllLayersFromREST = vi
+      .fn()
+      .mockResolvedValue([{ name: 'ns:layery' }])
+    ;(svc as any).layerRepo.fetchLayerDetails = vi.fn().mockResolvedValue({
+      layer: {
+        name: 'ns:layery',
+        title: 't',
+        resource: { href: '/not/matching/format' },
+        type: 'VECTOR',
+      },
+    })
+    ;(svc as any).wmsCache.get = vi.fn().mockResolvedValue({})
+    ;(svc as any).parser.extractCRSFromXML = vi.fn().mockReturnValue([])
+
+    const res = await svc.fetchWMSLayers('ws')
+    expect(res.length).toBe(1)
+    expect(res[0]).toHaveProperty('workspace', 'ns')
+    expect(res[0]).toHaveProperty('store', null)
+  })
+
+  it('delegates getDefaultHeaders and getVectorTileUrl to http client', () => {
+    const headers = { 'X-Test': '1' }
+    vi.spyOn((svc as any).httpClient, 'getDefaultHeaders').mockReturnValue(
+      headers,
+    )
+    vi.spyOn((svc as any).httpClient, 'getVectorTileUrl').mockReturnValue(
+      'vtile-url',
+    )
+
+    expect(svc.getDefaultHeaders(true)).toBe(headers)
+    expect(svc.getVectorTileUrl('name')).toBe('vtile-url')
+  })
 })

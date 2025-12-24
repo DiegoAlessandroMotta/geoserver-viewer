@@ -69,4 +69,25 @@ describe('GeoserverParser', () => {
 
     expect(parser.extractCRSFromXML(parsedArray as any, 'notfound')).toEqual([])
   })
+
+  it('returns empty array and logs when extract throws', () => {
+    const badLayer = {
+      get Name() {
+        throw new Error('boom')
+      },
+      CRS: 'EPSG:4326',
+    }
+
+    const parsed = {
+      WMS_Capabilities: {
+        Capability: {
+          Layer: { Layer: badLayer },
+        },
+      },
+    }
+
+    const res = parser.extractCRSFromXML(parsed as any, 'l1')
+    expect(res).toEqual([])
+    expect(logger.error).toHaveBeenCalled()
+  })
 })

@@ -240,4 +240,30 @@ describe('WebsocketClient', () => {
       expect.objectContaining({ msg: 'WebsocketClient: generic message' }),
     )
   })
+
+  it('schedules reconnect with correct delay and calls connect after delay', () => {
+    vi.useFakeTimers()
+    const logger = { debug: vi.fn(), warn: vi.fn() }
+    const client: any = new WebsocketClient({
+      WSClass: MockWS as any,
+      logger: logger as any,
+      config: { proxyUrl: '', basePath: '' } as any,
+    } as any)
+
+    const connectSpy = vi.spyOn(client as any, 'connect')
+    client.reconnectAttempts = 2
+    ;(client as any).scheduleReconnect()
+
+    const expectedDelay = Math.min(1000 * 2 ** 2, 30_000)
+    expect(logger.debug).toHaveBeenCalledWith(
+      expect.objectContaining({
+        msg: 'WebsocketClient: reconnect scheduled',
+        delay: expectedDelay,
+      }),
+    )
+
+    vi.advanceTimersByTime(expectedDelay)
+    expect(connectSpy).toHaveBeenCalled()
+    vi.useRealTimers()
+  })
 })
