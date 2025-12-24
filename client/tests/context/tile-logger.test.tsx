@@ -9,11 +9,12 @@ describe('TileLoggerProvider', () => {
   let onMessageSpy: any
 
   beforeEach(() => {
-    onMessageSpy = vi.spyOn(websocketClient, 'onMessage').mockImplementation((cb: any) => {
-      // return unsubscribe stub
-      ;(onMessageSpy as any).cb = cb
-      return () => {}
-    })
+    onMessageSpy = vi
+      .spyOn(websocketClient, 'onMessage')
+      .mockImplementation((cb: any) => {
+        ;(onMessageSpy as any).cb = cb
+        return (() => {}) as any
+      })
   })
 
   afterEach(() => {
@@ -39,22 +40,46 @@ describe('TileLoggerProvider', () => {
       </TileLoggerProvider>,
     )
 
-    // simulate two proxy-response messages
     act(() => {
-      ;(onMessageSpy as any).cb({ type: 'proxy-response', url: 'u1', target: 't', status: 200, cacheResult: null, viaProxy: false, durationMs: null, headers: {} })
-      ;(onMessageSpy as any).cb({ type: 'proxy-response', url: 'u2', target: 't', status: 200, cacheResult: null, viaProxy: false, durationMs: null, headers: {} })
+      ;(onMessageSpy as any).cb({
+        type: 'proxy-response',
+        url: 'u1',
+        target: 't',
+        status: 200,
+        cacheResult: null,
+        viaProxy: false,
+        durationMs: null,
+        headers: {},
+      })
+      ;(onMessageSpy as any).cb({
+        type: 'proxy-response',
+        url: 'u2',
+        target: 't',
+        status: 200,
+        cacheResult: null,
+        viaProxy: false,
+        durationMs: null,
+        headers: {},
+      })
     })
 
     expect(screen.getByTestId('cnt').textContent).toBe('2')
 
-    // adding third should truncate to maxLogs
     act(() => {
-      ;(onMessageSpy as any).cb({ type: 'proxy-response', url: 'u3', target: 't', status: 200, cacheResult: null, viaProxy: false, durationMs: null, headers: {} })
+      ;(onMessageSpy as any).cb({
+        type: 'proxy-response',
+        url: 'u3',
+        target: 't',
+        status: 200,
+        cacheResult: null,
+        viaProxy: false,
+        durationMs: null,
+        headers: {},
+      })
     })
 
     expect(screen.getByTestId('cnt').textContent).toBe('2')
 
-    // clear and close
     act(() => screen.getByText('clear').click())
     expect(screen.getByTestId('cnt').textContent).toBe('0')
 
