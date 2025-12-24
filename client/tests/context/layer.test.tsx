@@ -5,6 +5,7 @@ import { useLayerContext } from '@/shared/context/layer/useLayerContext'
 import { GeoserverConfigContext } from '@/shared/context/geoserver-config/GeoserverConfigContext'
 import { geoserverService, logger } from '@/shared/providers'
 import { GeoserverAuthRequiredError } from '@/shared/errors/geoserver-auth-required.error'
+import { useEffect } from 'react'
 
 function Consumer() {
   const ctx = useLayerContext()
@@ -375,10 +376,12 @@ describe('LayerContextProvider', () => {
 
     unmount()
 
-    let refreshFn: any = null
+    const refreshRef: { current: any } = { current: null }
     function Grabber() {
       const ctx = useLayerContext()
-      refreshFn = ctx.refreshLayers
+      useEffect(() => {
+        refreshRef.current = ctx.refreshLayers
+      }, [ctx.refreshLayers])
       return null
     }
 
@@ -405,7 +408,7 @@ describe('LayerContextProvider', () => {
     u2()
 
     await act(async () => {
-      await refreshFn()
+      await refreshRef.current?.()
     })
 
     expect(fetchSpy).not.toHaveBeenCalled()
