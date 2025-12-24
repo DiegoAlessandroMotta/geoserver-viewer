@@ -23,6 +23,7 @@
     "format:client": "pnpm -F client format",
     "format-check:client": "pnpm -F client format-check",
     "test:client": "pnpm -F client test",
+    "test:coverage:client": "pnpm -F client test:coverage",
     "copy-env": "node ./scripts/copy-env.mjs"
   },
   "devDependencies": {
