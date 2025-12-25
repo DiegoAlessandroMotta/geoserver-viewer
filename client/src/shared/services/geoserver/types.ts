@@ -27,7 +27,6 @@ export type ParsedCapabilities = Record<string, unknown>
 
 export interface DetailedLayer {
   fullName: string
-  title?: string
   layerName?: string
   workspace?: string | null
   store?: string | null

@@ -99,7 +99,6 @@ describe('LayerContextProvider', () => {
         {
           fullName: 'L1',
           layerName: 's',
-          title: 't',
           workspace: 'w',
           store: 'st',
           type: 't',
@@ -109,6 +108,7 @@ describe('LayerContextProvider', () => {
           dateModified: null,
           color: '#fff',
         },
+
       ])
 
     render(
@@ -166,7 +166,7 @@ describe('LayerContextProvider', () => {
       {
         fullName: 'L1',
         layerName: 's',
-        title: 't',
+
         workspace: 'w',
         store: 'st',
         type: 't',
@@ -290,7 +290,6 @@ describe('LayerContextProvider', () => {
       {
         fullName: 'L1',
         layerName: 's',
-        title: 't',
         workspace: 'w',
         store: 'st',
         type: 't',

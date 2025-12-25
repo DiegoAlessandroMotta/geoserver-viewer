@@ -3,7 +3,6 @@ import { createContext } from 'react'
 export interface LayerInfo {
   fullName: string
   layerName?: string
-  title?: string
   workspace?: string | null
   store?: string | null
   type?: string

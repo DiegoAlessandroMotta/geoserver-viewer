@@ -40,15 +40,15 @@ describe('LayerItem', () => {
     expect(screen.getByText(/CRS:/)).toBeTruthy()
   })
 
-  it('shows title when title is present and different from short', () => {
+  it('displays layerName when available', () => {
     const onToggle = vi.fn()
     const onZoom = vi.fn()
-    const layer: any = { fullName: 'ns:t1', layerName: 's1', title: 'TITLE 1', enabled: false, color: '#fff' }
+    const layer: any = { fullName: 'ns:t1', layerName: 's1', enabled: false, color: '#fff' }
 
     render(<LayerItem layer={layer} onToggle={onToggle} onZoomChange={onZoom} />)
 
-    expect(screen.getByText('TITLE 1')).toBeTruthy()
-    fireEvent.click(screen.getByText('TITLE 1'))
+    expect(screen.getByText('s1')).toBeTruthy()
+    fireEvent.click(screen.getByText('s1'))
     expect(onToggle).toHaveBeenCalled()
   })
 

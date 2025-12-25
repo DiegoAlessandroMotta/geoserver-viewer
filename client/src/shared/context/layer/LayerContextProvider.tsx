@@ -161,14 +161,13 @@ export const LayerContextProvider = ({
         const newLayers: Map<string, LayerInfo> = new Map()
 
         rawLayers.forEach((l) => {
-          const key = String(l.fullName || l.title || l.layerName)
+          const key = String(l.fullName || l.layerName)
 
           const savedZoom = getLayerZoomFromStorage(key)
 
           newLayers.set(key, {
             fullName: l.fullName,
             layerName: l.layerName,
-            title: l.title,
             workspace: l.workspace,
             store: l.store,
             type: l.type,

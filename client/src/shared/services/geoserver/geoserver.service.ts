@@ -62,11 +62,8 @@ export class GeoserverService {
   }
 
   private parseResourceInfo = (resourceUrl?: string) => {
-    // Normalize empty values to explicit nulls so callers can rely on null when absent
     if (!resourceUrl) return { workspace: null, store: null }
 
-    // Accept common GeoServer resource URL forms, e.g.:
-    // /workspaces/{ws}/datastores/{store}, /workspaces/{ws}/stores/{store}, /workspaces/{ws}/coveragestores/{store}
     const match = resourceUrl.match(
       /\/workspaces\/([^/]+)\/(?:datastores|stores|coveragestores)\/([^/]+)/i,
     )
@@ -104,20 +101,20 @@ export class GeoserverService {
     const results = await this.executor.run<RestLayerItem, DetailedLayer>(
       layersList,
       async (layerInfo) => {
-        const layerName = layerInfo.name
+        const layerFullName = layerInfo.name
 
-        const [layerWorkspace, ...nameParts] = layerName.split(':')
-        const shortName = nameParts.join(':')
+        const [layerWorkspace, ...nameParts] = layerFullName.split(':')
+        const layerName = nameParts.join(':')
 
         const [details, crs, hexHash] = await Promise.all([
-          this.layerRepo.fetchLayerDetails(layerName),
-          this.parser.extractCRSFromXML(capabilities ?? null, layerName),
-          generateSHA1HexHash(layerName),
+          this.layerRepo.fetchLayerDetails(layerFullName),
+          this.parser.extractCRSFromXML(capabilities ?? null, layerFullName),
+          generateSHA1HexHash(layerFullName),
         ])
 
         if (!details?.layer) {
           this.logger.warn({
-            msg: `No details found for layer: ${layerName}`,
+            msg: `No details found for layer: ${layerFullName}`,
           })
           return null
         }
@@ -127,8 +124,8 @@ export class GeoserverService {
         const color = randomColorFromString(hexHash)
 
         const result: DetailedLayer = {
-          fullName: layerName,
-          layerName: shortName,
+          fullName: layerFullName,
+          layerName,
           workspace: resourceInfo.workspace ?? layerWorkspace,
           store: resourceInfo.store ?? null,
           type: layer.type,

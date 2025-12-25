@@ -100,7 +100,7 @@ export const LayerItem = ({ layer, onToggle, onZoomChange }: Props) => {
             className="text-sm font-medium text-gray-800 truncate flex-1 max-w-44 py-2 cursor-pointer"
             onClick={() => onToggle()}
           >
-            {layer.title ?? layer.layerName ?? layer.fullName}
+            {layer.layerName ?? layer.fullName}
           </span>
           <button
             onClick={() => setIsExpanded(!isExpanded)}
