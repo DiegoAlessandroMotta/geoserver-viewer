@@ -6,7 +6,7 @@ import { GeoserverParser } from '@/shared/services/geoserver/geoserver-parser'
 import { GeoserverLayerRepository } from '@/shared/services/geoserver/geoserver-layer.repository'
 import { WMSCapabilitiesCache } from '@/shared/services/geoserver/wms-capabilities.cache'
 import { ConcurrencyExecutor } from '@/shared/services/concurrency.executor'
-
+import type { ParsedCapabilities } from '@/shared/services/geoserver/types'
 interface GeoserverServiceOptions {
   proxyUrl: string
   logger: ILogger
@@ -32,7 +32,6 @@ export class GeoserverService {
       logger,
     )
     this.executor = new ConcurrencyExecutor<any>(6, logger)
-    this.activeFetchController = null
 
     configManager.onChange((change) => {
       if (
@@ -50,14 +49,8 @@ export class GeoserverService {
     return this.httpClient.getVectorTileUrl(layerName)
   }
 
-  private activeFetchController: AbortController | null = null
-
   public invalidateCache = (): void => {
     this.wmsCache.invalidate()
-    if (this.activeFetchController) {
-      this.activeFetchController.abort()
-      this.activeFetchController = null
-    }
   }
 
   public getDefaultHeaders = (includeCredentials?: boolean) => {
@@ -83,7 +76,9 @@ export class GeoserverService {
     return { workspace: null, store: null }
   }
 
-  public fetchWMSLayers = async (workspace: string) => {
+  public fetchWMSLayers = async (
+    workspace: string,
+  ): Promise<import('@/shared/services/geoserver/types').DetailedLayer[]> => {
     this.invalidateCache()
 
     const layersList = await this.layerRepo.fetchAllLayersFromREST()
@@ -92,14 +87,13 @@ export class GeoserverService {
       return []
     }
 
-    // create a controller to allow cancellation of the capabilities fetch
-    this.activeFetchController = new AbortController()
-    const capabilities = await this.wmsCache.get()
-    // Note: wmsCache.invalidate() will abort the in-flight request; check if
-    // this service's active controller was aborted elsewhere
-    if (this.activeFetchController?.signal.aborted) {
-      this.activeFetchController = null
-      return null as any
+    const capabilities: ParsedCapabilities | null = await this.wmsCache.get()
+
+    if (!capabilities) {
+      this.logger.debug({
+        msg: 'fetchWMSLayers: capabilities fetch canceled or returned null',
+      })
+      return []
     }
 
     const results = await this.executor.run(
