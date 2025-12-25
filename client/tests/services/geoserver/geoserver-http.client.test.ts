@@ -73,6 +73,21 @@ describe('GeoserverHttpClient', () => {
     expect(fetch).toHaveBeenCalled()
   })
 
+  it('passes AbortSignal to fetch', async () => {
+    const client = new GeoserverHttpClient(proxyUrl, makeConfig() as any)
+    const fake = { ok: true, status: 200, json: async () => ({ a: 1 }) } as any
+
+    const fetchSpy = vi.fn((..._args: any[]) => Promise.resolve(fake))
+    vi.stubGlobal('fetch', fetchSpy)
+
+    const ac = new AbortController()
+    await client.fetchJson('foo', false, ac.signal)
+
+    expect(fetchSpy).toHaveBeenCalled()
+    const callOpts = fetchSpy.mock.calls[0][1]
+    expect(callOpts.signal).toBe(ac.signal)
+  })
+
   it('fetchJson throws when response not ok', async () => {
     const client = new GeoserverHttpClient(proxyUrl, makeConfig() as any)
     const fake = { ok: false, status: 500, json: async () => ({}) } as any

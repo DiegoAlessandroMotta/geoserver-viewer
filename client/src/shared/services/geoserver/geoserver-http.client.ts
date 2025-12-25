@@ -37,11 +37,13 @@ export class GeoserverHttpClient {
   private async fetchWithHeaders(
     path: string,
     includeCredentials = false,
+    signal?: AbortSignal,
   ): Promise<Response> {
     const base = this.getBaseUrl()
     const url = `${base}/${path}`
     const res = await fetch(url, {
       headers: this.getDefaultHeaders(includeCredentials),
+      signal,
     })
 
     if (res.status === 401) {
@@ -54,8 +56,9 @@ export class GeoserverHttpClient {
   public async fetchJson(
     path: string,
     includeCredentials = false,
+    signal?: AbortSignal,
   ): Promise<any> {
-    const res = await this.fetchWithHeaders(path, includeCredentials)
+    const res = await this.fetchWithHeaders(path, includeCredentials, signal)
     if (!res.ok) {
       throw new Error(`${path} failed: ${res.status}`)
     }
@@ -65,8 +68,9 @@ export class GeoserverHttpClient {
   public async fetchText(
     path: string,
     includeCredentials = false,
+    signal?: AbortSignal,
   ): Promise<string> {
-    const res = await this.fetchWithHeaders(path, includeCredentials)
+    const res = await this.fetchWithHeaders(path, includeCredentials, signal)
     if (!res.ok) {
       throw new Error(`${path} failed: ${res.status}`)
     }

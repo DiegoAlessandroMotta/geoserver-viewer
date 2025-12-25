@@ -156,7 +156,7 @@ export const LayerContextProvider = ({
 
         const newLayers = new Map()
 
-        rawLayers.forEach((l) => {
+        rawLayers.forEach((l: any) => {
           const name = l.name || l.title || l.short
 
           const savedZoom = getLayerZoomFromStorage(name)
