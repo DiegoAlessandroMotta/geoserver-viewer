@@ -38,7 +38,7 @@ describe('GeoserverService', () => {
         layer: {
           name: name,
           title: `${name}-title`,
-          resource: { '@href': '/workspaces/ws/datastores/store' },
+          resource: { href: '/workspaces/ws/datastores/store' },
           type: 'VECTOR',
           dateCreated: '2020',
           dateModified: '2021',
@@ -55,7 +55,6 @@ describe('GeoserverService', () => {
 
     expect(res.length).toBe(2)
     expect(res[0]).toHaveProperty('fullName', 'ws:my_layer')
-    expect(res[0]).toHaveProperty('title', 'ws:my_layer-title')
     expect(res[0]).toHaveProperty('layerName', 'my_layer')
     expect(res[0]).toHaveProperty('workspace', 'ws')
     expect(res[0]).toHaveProperty('store', 'store')

@@ -27,7 +27,10 @@ describe('GeoserverParser', () => {
 
     const parsed = parser.parseXML(xml)
     expect(parsed).toBeTruthy()
-    expect(parsed!.WMS_Capabilities.Capability.Layer.Layer.Name).toBe('layer1')
+    const anyParsed = parsed as any
+    expect(anyParsed.WMS_Capabilities.Capability.Layer.Layer.Name).toBe(
+      'layer1',
+    )
   })
 
   it('returns null and logs on invalid XML', () => {

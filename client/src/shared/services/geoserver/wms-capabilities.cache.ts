@@ -3,9 +3,11 @@ import type { GeoserverParser } from '@/shared/services/geoserver/geoserver-pars
 import type { ILogger } from '@/shared/interfaces/logger.interface'
 import { GeoserverAuthRequiredError } from '@/shared/errors/geoserver-auth-required.error'
 
+import type { ParsedCapabilities } from '@/shared/services/geoserver/types'
+
 export class WMSCapabilitiesCache {
-  private cache: Record<string, any> | null = null
-  private cachePromise: Promise<Record<string, any> | null> | null = null
+  private cache: ParsedCapabilities | null = null
+  private cachePromise: Promise<ParsedCapabilities | null> | null = null
   private controller: AbortController | null = null
 
   constructor(
@@ -23,7 +25,7 @@ export class WMSCapabilitiesCache {
     }
   }
 
-  public async get(): Promise<Record<string, any> | null> {
+  public async get(): Promise<ParsedCapabilities | null> {
     if (this.cachePromise) return this.cachePromise
     if (this.cache) return this.cache
 
@@ -40,9 +42,10 @@ export class WMSCapabilitiesCache {
         const parsed = this.parser.parseXML(text)
         if (parsed) this.cache = parsed
         return parsed
-      } catch (error: any) {
+      } catch (error) {
         if (error instanceof GeoserverAuthRequiredError) throw error
-        if (error && error.name === 'AbortError') {
+        // AbortError handling: rely on `name` property if available
+        if ((error as any)?.name === 'AbortError') {
           // silent cancellation
           this.logger.debug?.({ msg: 'WMSCapabilitiesCache.get: aborted' })
           return null

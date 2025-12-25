@@ -3,7 +3,7 @@ import { ConcurrencyExecutor } from '@/shared/services/concurrency.executor'
 
 describe('ConcurrencyExecutor', () => {
   it('processes items and retains order', async () => {
-    const exec = new ConcurrencyExecutor<number, number>(2)
+    const exec = new ConcurrencyExecutor(2)
     const items = [1, 2, 3, 4]
 
     const result = await exec.run(items, async (n) => {
@@ -16,7 +16,7 @@ describe('ConcurrencyExecutor', () => {
 
   it('returns null for items whose executor throws and logs error', async () => {
     const logger = { error: vi.fn() }
-    const exec = new ConcurrencyExecutor<number, number>(3, logger as any)
+    const exec = new ConcurrencyExecutor(3, logger as any)
     const items = [1, 2, 3]
 
     const result = await exec.run(items, async (n) => {
@@ -29,13 +29,13 @@ describe('ConcurrencyExecutor', () => {
   })
 
   it('returns empty array when items is empty', async () => {
-    const exec = new ConcurrencyExecutor<number, number>(2)
+    const exec = new ConcurrencyExecutor(2)
     const res = await exec.run([], async () => 1)
     expect(res).toEqual([])
   })
 
   it('processes items when maxConcurrent is zero (uses at least 1 worker)', async () => {
-    const exec = new ConcurrencyExecutor<number, number>(0)
+    const exec = new ConcurrencyExecutor(0)
     const items = [1, 2, 3]
     const res = await exec.run(items, async (n) => n * 10)
     expect(res).toEqual([10, 20, 30])

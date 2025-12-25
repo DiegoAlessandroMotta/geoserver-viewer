@@ -14,11 +14,14 @@ export class GeoserverLayerRepository {
 
   public async fetchAllLayersFromREST(): Promise<RestLayerItem[]> {
     try {
-      const data = await this.httpClient.fetchJson('rest/layers.json', true)
+      const data = await this.httpClient.fetchJson<{
+        layers?: { layer?: RestLayerItem | RestLayerItem[] }
+      }>('rest/layers.json', true)
+
+      console.log('fetchAllLayersFromREST', data)
+
       const layers = data?.layers?.layer || []
-      return Array.isArray(layers)
-        ? (layers as RestLayerItem[])
-        : ([layers] as RestLayerItem[])
+      return Array.isArray(layers) ? layers : [layers]
     } catch (error) {
       if (error instanceof GeoserverAuthRequiredError) throw error
       this.logger.error({ msg: 'Error fetching layers from REST API:', error })
@@ -31,11 +34,11 @@ export class GeoserverLayerRepository {
   ): Promise<LayerDetailsResponse | null> {
     try {
       const encodedName = layerName.replace(':', '%3A')
-      const data = await this.httpClient.fetchJson(
+      const data = await this.httpClient.fetchJson<LayerDetailsResponse>(
         `rest/layers/${encodedName}.json`,
         true,
       )
-      return data as LayerDetailsResponse
+      return data
     } catch (error) {
       if (error instanceof GeoserverAuthRequiredError) throw error
       this.logger.error({

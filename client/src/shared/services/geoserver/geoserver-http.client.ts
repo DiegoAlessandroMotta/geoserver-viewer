@@ -53,16 +53,16 @@ export class GeoserverHttpClient {
     return res
   }
 
-  public async fetchJson(
+  public async fetchJson<T = unknown>(
     path: string,
     includeCredentials = false,
     signal?: AbortSignal,
-  ): Promise<any> {
+  ): Promise<T> {
     const res = await this.fetchWithHeaders(path, includeCredentials, signal)
     if (!res.ok) {
       throw new Error(`${path} failed: ${res.status}`)
     }
-    return res.json()
+    return res.json() as Promise<T>
   }
 
   public async fetchText(

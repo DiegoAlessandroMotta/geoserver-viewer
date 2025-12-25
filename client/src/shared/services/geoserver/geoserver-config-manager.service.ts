@@ -88,8 +88,7 @@ export class GeoserverConfigManagerService {
       sessionId: string
     }>,
   ) => {
-    const emitted: any = {}
-
+    const emitted: GeoserverConfigChange = {}
     if (cfg.geoserverUrl !== undefined) {
       if (cfg.geoserverUrl == null)
         this.storage.removeItem(LOCAL_STORAGE_URL_KEY)

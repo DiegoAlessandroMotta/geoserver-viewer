@@ -9,6 +9,7 @@ import { ConcurrencyExecutor } from '@/shared/services/concurrency.executor'
 import type {
   DetailedLayer,
   ParsedCapabilities,
+  RestLayerItem,
 } from '@/shared/services/geoserver/types'
 interface GeoserverServiceOptions {
   proxyUrl: string
@@ -21,7 +22,7 @@ export class GeoserverService {
   private readonly parser: GeoserverParser
   private readonly layerRepo: GeoserverLayerRepository
   private readonly wmsCache: WMSCapabilitiesCache
-  private readonly executor: ConcurrencyExecutor<any>
+  private readonly executor: ConcurrencyExecutor
   private readonly logger: ILogger
 
   constructor({ proxyUrl, logger, configManager }: GeoserverServiceOptions) {
@@ -34,7 +35,7 @@ export class GeoserverService {
       this.parser,
       logger,
     )
-    this.executor = new ConcurrencyExecutor<any>(6, logger)
+    this.executor = new ConcurrencyExecutor(6, logger)
 
     configManager.onChange((change) => {
       if (
@@ -61,12 +62,13 @@ export class GeoserverService {
   }
 
   private parseResourceInfo = (resourceUrl?: string) => {
-    if (resourceUrl == null) {
-      return { workspace: null, store: null }
-    }
+    // Normalize empty values to explicit nulls so callers can rely on null when absent
+    if (!resourceUrl) return { workspace: null, store: null }
 
+    // Accept common GeoServer resource URL forms, e.g.:
+    // /workspaces/{ws}/datastores/{store}, /workspaces/{ws}/stores/{store}, /workspaces/{ws}/coveragestores/{store}
     const match = resourceUrl.match(
-      /\/workspaces\/([^/]+)\/datastores\/([^/]+)/,
+      /\/workspaces\/([^/]+)\/(?:datastores|stores|coveragestores)\/([^/]+)/i,
     )
 
     if (match) {
@@ -99,9 +101,9 @@ export class GeoserverService {
       return []
     }
 
-    const results = await this.executor.run(
+    const results = await this.executor.run<RestLayerItem, DetailedLayer>(
       layersList,
-      async (layerInfo: any) => {
+      async (layerInfo) => {
         const layerName = layerInfo.name
 
         const [layerWorkspace, ...nameParts] = layerName.split(':')
@@ -121,36 +123,30 @@ export class GeoserverService {
         }
 
         const layer = details.layer
-        const resourceInfo = this.parseResourceInfo(
-          layer.resource?.href || layer.resource?.['@href'],
-        )
+        const resourceInfo = this.parseResourceInfo(layer.resource?.href)
         const color = randomColorFromString(hexHash)
 
-        const title =
-          layer.title && layer.title !== shortName ? layer.title : undefined
-
-        const result: any = {
+        const result: DetailedLayer = {
           fullName: layerName,
           layerName: shortName,
-          workspace: resourceInfo.workspace || layerWorkspace,
-          store: resourceInfo.store,
+          workspace: resourceInfo.workspace ?? layerWorkspace,
+          store: resourceInfo.store ?? null,
           type: layer.type,
           dateCreated: layer.dateCreated,
           dateModified: layer.dateModified,
           defaultStyle: layer.defaultStyle?.name,
-          crs: crs ?? [],
+          crs: crs,
           color: color,
         }
-
-        if (title) result.title = title
 
         return result
       },
     )
 
-    const detailedLayers = results.filter((layer) => layer !== null)
+    const detailedLayers = results.filter(
+      (layer): layer is DetailedLayer => layer !== null,
+    )
 
-    // Keep debug logs compatible with previous behavior
     this.logger.debug({
       msg: `fetchWMSLayers: found ${detailedLayers.length} layers (workspace=${workspace})`,
     })
@@ -158,6 +154,5 @@ export class GeoserverService {
       this.logger.debug({ msg: 'layers', data: detailedLayers })
 
     return detailedLayers
-    // let any error bubble up to callers
   }
 }

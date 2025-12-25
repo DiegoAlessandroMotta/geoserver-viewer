@@ -1,33 +1,29 @@
 export interface RestLayerItem {
   name: string
-  href?: string
-  title?: string | null
-  short?: string | null
+  href: string
 }
 
 export interface LayerResource {
   '@class'?: string
   name?: string
-  '@href'?: string
   href?: string
 }
 
 export interface LayerDetails {
   name: string
-  title?: string | null
   type?: string
-  defaultStyle?: { name?: string; href?: string } | null
-  resource?: LayerResource | null
+  defaultStyle?: { name?: string; href?: string }
+  resource?: LayerResource
   attribution?: { logoWidth?: number; logoHeight?: number }
-  dateCreated?: string | null
-  dateModified?: string | null
+  dateCreated?: string
+  dateModified?: string
 }
 
 export type LayerDetailsResponse = {
   layer?: LayerDetails
 }
 
-export type ParsedCapabilities = Record<string, any>
+export type ParsedCapabilities = Record<string, unknown>
 
 export interface DetailedLayer {
   fullName: string

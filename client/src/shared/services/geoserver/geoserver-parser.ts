@@ -12,9 +12,13 @@ export class GeoserverParser {
     })
   }
 
-  public parseXML(xmlString: string): Record<string, any> | null {
+  public parseXML(
+    xmlString: string,
+  ): import('@/shared/services/geoserver/types').ParsedCapabilities | null {
     try {
-      return this.xmlParser.parse(xmlString)
+      return this.xmlParser.parse(
+        xmlString,
+      ) as import('@/shared/services/geoserver/types').ParsedCapabilities
     } catch (error) {
       this.logger.error({ msg: 'Error parsing XML:', error })
       return null
@@ -22,13 +26,25 @@ export class GeoserverParser {
   }
 
   public extractCRSFromXML(
-    parsedXML: Record<string, any> | null,
+    parsedXML:
+      | import('@/shared/services/geoserver/types').ParsedCapabilities
+      | null,
     layerName: string,
   ): string[] {
     try {
       if (!parsedXML) return []
 
-      const layers = parsedXML?.WMS_Capabilities?.Capability?.Layer?.Layer
+      type LayerNode = { Name?: string; CRS?: string | string[] }
+      type CapStruct = {
+        WMS_Capabilities?: {
+          Capability?: {
+            Layer?: { Layer?: LayerNode | LayerNode[] }
+          }
+        }
+      }
+
+      const cap = parsedXML as unknown as CapStruct
+      const layers = cap.WMS_Capabilities?.Capability?.Layer?.Layer
       if (!layers) return []
 
       const layersList = Array.isArray(layers) ? layers : [layers]

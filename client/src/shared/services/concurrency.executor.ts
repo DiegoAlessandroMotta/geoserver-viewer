@@ -1,10 +1,12 @@
-export class ConcurrencyExecutor<T, R = any> {
+import type { ILogger } from '@/shared/interfaces/logger.interface'
+
+export class ConcurrencyExecutor {
   constructor(
     private readonly maxConcurrent: number,
-    private readonly logger?: any,
+    private readonly logger?: ILogger,
   ) {}
 
-  async run(
+  async run<T, R = unknown>(
     items: T[],
     executor: (item: T) => Promise<R | null>,
   ): Promise<(R | null)[]> {

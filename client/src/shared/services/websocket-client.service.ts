@@ -10,10 +10,18 @@ export interface WSProxyResponseMessage {
   cacheResult: string | null
   viaProxy: boolean
   durationMs: number | null
-  headers: Record<string, any>
+  headers: Record<string, unknown>
 }
 
-export type WSMessage = { type: string; [key: string]: any }
+export interface SessionIdMessage {
+  type: 'session-id'
+  sessionId?: string
+}
+
+export type WSMessage =
+  | SessionIdMessage
+  | WSProxyResponseMessage
+  | Record<string, unknown>
 
 export interface WebsocketClientOptions {
   logger?: ILogger
@@ -164,7 +172,8 @@ export class WebsocketClient {
     // this.logger?.debug({ msg: 'WebsocketClient: message received', data: msg })
 
     if (msg.type === 'session-id') {
-      const sessionId: string | undefined = (msg as any).sessionId
+      const m = msg as SessionIdMessage
+      const sessionId = m.sessionId
       if (sessionId) {
         this.logger?.debug({
           msg: 'WebsocketClient: session-id assigned',
