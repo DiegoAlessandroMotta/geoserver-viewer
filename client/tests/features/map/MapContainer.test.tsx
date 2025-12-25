@@ -1,8 +1,8 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import React, { useEffect } from 'react'
 import { MapContainer } from '@/features/map/MapContainer'
-import { geoserverService } from '@/shared/providers'
+import { geoserverService } from '@/shared/providers' 
 
 vi.mock('react-map-gl/maplibre', () => {
   return {
@@ -60,7 +60,9 @@ describe('MapContainer', () => {
     expect(initial).toBeTruthy()
 
     const btn = screen.getByTestId('trigger-move')
-    btn.click()
+    act(() => {
+      btn.click()
+    })
 
     const updated = await screen.findByText(/Zoom: 7.50/)
     expect(updated).toBeTruthy()
