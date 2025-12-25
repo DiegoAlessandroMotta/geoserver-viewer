@@ -89,14 +89,10 @@ export class GeoserverService {
       return []
     }
 
-    const capabilities: ParsedCapabilities | null = await this.wmsCache.get()
-
-    if (!capabilities) {
-      this.logger.debug({
-        msg: 'fetchWMSLayers: capabilities fetch canceled or returned null',
-      })
-      return []
-    }
+    // Lazily fetch WMS GetCapabilities only when needed per-layer to avoid an
+    // unnecessary HTTP call when REST layer details already contain CRS.
+    let capabilities: ParsedCapabilities | null | undefined = undefined
+    let capabilitiesPromise: Promise<ParsedCapabilities | null> | null = null
 
     const results = await this.executor.run<RestLayerItem, DetailedLayer>(
       layersList,
@@ -106,11 +102,38 @@ export class GeoserverService {
         const [layerWorkspace, ...nameParts] = layerFullName.split(':')
         const layerName = nameParts.join(':')
 
-        const [details, crs, hexHash] = await Promise.all([
-          this.layerRepo.fetchLayerDetails(layerFullName),
-          this.parser.extractCRSFromXML(capabilities ?? null, layerFullName),
-          generateSHA1HexHash(layerFullName),
+        const [details, hexHash] = await Promise.all([
+          this.layerRepo.fetchLayerDetails(layerName),
+          generateSHA1HexHash(layerName),
         ])
+
+        const crsFromDetails = (() => {
+          if (!details?.layer) return undefined
+          const l = details.layer as any
+          const candidate = l.srs || l.CRS || l.supportedCRS || l.nativeCRS
+          if (!candidate) return undefined
+          return Array.isArray(candidate) ? candidate : [candidate]
+        })()
+
+        let crsFromWMS: string[] | undefined
+        if (!crsFromDetails) {
+          if (capabilities === undefined) {
+            capabilitiesPromise = capabilitiesPromise ?? this.wmsCache.get()
+            capabilities = await capabilitiesPromise
+          }
+
+          if (!capabilities) {
+            this.logger.debug({
+              msg: 'fetchWMSLayers: capabilities fetch canceled or returned null',
+              layer: layerFullName,
+            })
+            return null
+          }
+
+          crsFromWMS = this.parser.extractCRSFromXML(capabilities, layerName)
+        }
+
+        const crs = crsFromDetails ?? crsFromWMS ?? []
 
         if (!details?.layer) {
           this.logger.warn({
@@ -147,8 +170,9 @@ export class GeoserverService {
     this.logger.debug({
       msg: `fetchWMSLayers: found ${detailedLayers.length} layers (workspace=${workspace})`,
     })
-    if (detailedLayers.length > 0)
+    if (detailedLayers.length > 0) {
       this.logger.debug({ msg: 'layers', data: detailedLayers })
+    }
 
     return detailedLayers
   }

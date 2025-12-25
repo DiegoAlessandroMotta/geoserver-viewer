@@ -18,8 +18,6 @@ export class GeoserverLayerRepository {
         layers?: { layer?: RestLayerItem | RestLayerItem[] }
       }>('rest/layers.json', true)
 
-      console.log('fetchAllLayersFromREST', data)
-
       const layers = data?.layers?.layer || []
       return Array.isArray(layers) ? layers : [layers]
     } catch (error) {

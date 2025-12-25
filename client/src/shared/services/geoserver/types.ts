@@ -12,6 +12,10 @@ export interface LayerResource {
 export interface LayerDetails {
   name: string
   type?: string
+  srs?: string | string[]
+  CRS?: string | string[]
+  nativeCRS?: string
+  supportedCRS?: string | string[]
   defaultStyle?: { name?: string; href?: string }
   resource?: LayerResource
   attribution?: { logoWidth?: number; logoHeight?: number }

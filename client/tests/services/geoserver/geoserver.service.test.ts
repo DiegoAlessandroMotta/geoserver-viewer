@@ -37,7 +37,8 @@ describe('GeoserverService', () => {
       .mockImplementation(async (name: string) => ({
         layer: {
           name: name,
-          title: `${name}-title`,
+          // include CRS directly in details – service should use this and skip WMS parser
+          srs: ['EPSG:4326'],
           resource: { href: '/workspaces/ws/datastores/store' },
           type: 'VECTOR',
           dateCreated: '2020',
@@ -45,11 +46,11 @@ describe('GeoserverService', () => {
           defaultStyle: { name: 's1' },
         },
       }))
-    ;(svc as any).parser.extractCRSFromXML = vi
-      .fn()
-      .mockReturnValue(['EPSG:4326'])
+    ;(svc as any).parser.extractCRSFromXML = vi.fn()
 
     vi.spyOn(utils, 'generateSHA1HexHash').mockResolvedValue('deadbeef')
+
+    const parserSpy = vi.spyOn((svc as any).parser, 'extractCRSFromXML')
 
     const res = await svc.fetchWMSLayers('ws')
 
@@ -62,6 +63,7 @@ describe('GeoserverService', () => {
     expect(res[0]).toHaveProperty('defaultStyle', 's1')
     expect(res[0].crs).toEqual(['EPSG:4326'])
     expect(res[0].color).toMatch(/^#/)
+    expect(parserSpy).not.toHaveBeenCalled()
   })
 
   it('omits title when equal to short name', async () => {
