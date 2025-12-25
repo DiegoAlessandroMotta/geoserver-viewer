@@ -123,24 +123,35 @@ export const LayerContextProvider = ({
         logger.debug({
           msg: 'LayerContextProvider.refreshLayers: geoserver not configured; skipping fetch',
         })
-        setLayersMap(new Map())
-        setLoading(false)
+        if (mountedRef.current) {
+          setLayersMap(new Map())
+          setLoading(false)
+        }
         return
       }
+
+      if (!mountedRef.current) {
+        logger.debug({
+          msg: 'LayerContextProvider.refreshLayers: mountedRef not found before starting refresh, skipping',
+        })
+        return
+      }
+
       setLoading(true)
       try {
         logger.debug({
           msg: 'LayerContextProvider.refreshLayers: starting refresh',
         })
 
+        const rawLayers = await geoserverService.fetchWMSLayers(ws ?? '')
+
         if (!mountedRef.current) {
           logger.debug({
-            msg: 'LayerContextProvider.refreshLayers: mountedRef not found, skipping refresh',
+            msg: 'LayerContextProvider.refreshLayers: mountedRef not found, skipping update',
           })
           return
         }
 
-        const rawLayers = await geoserverService.fetchWMSLayers(ws ?? '')
         setAuthRequired(false)
 
         const newLayers = new Map()
@@ -163,7 +174,9 @@ export const LayerContextProvider = ({
             dateCreated: l.dateCreated,
             dateModified: l.dateModified,
             enabled: false,
-            minZoom: savedZoom.minZoom ?? Math.max(defaultMinZoom, appConfig.mapMinZoom),
+            minZoom:
+              savedZoom.minZoom ??
+              Math.max(defaultMinZoom, appConfig.mapMinZoom),
             maxZoom: savedZoom.maxZoom ?? appConfig.mapMaxZoom,
             color: l.color,
           })
@@ -172,8 +185,10 @@ export const LayerContextProvider = ({
         setLayersMap(newLayers)
       } catch (error) {
         if (error instanceof GeoserverAuthRequiredError) {
-          setAuthRequired(true)
-          setLayersMap(new Map())
+          if (mountedRef.current) {
+            setAuthRequired(true)
+            setLayersMap(new Map())
+          }
           logger.warn({
             msg: 'LayerContextProvider.refreshLayers: auth required to fetch layers',
             error,
@@ -185,9 +200,11 @@ export const LayerContextProvider = ({
           msg: 'LayerContextProvider.refreshLayers: could not fetch layers',
           error,
         })
-        setLayersMap(new Map())
+        if (mountedRef.current) {
+          setLayersMap(new Map())
+        }
       } finally {
-        setLoading(false)
+        if (mountedRef.current) setLoading(false)
       }
     },
     [configWorkspace, isConfigured],
