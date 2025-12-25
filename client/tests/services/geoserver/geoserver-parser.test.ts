@@ -90,4 +90,18 @@ describe('GeoserverParser', () => {
     expect(res).toEqual([])
     expect(logger.error).toHaveBeenCalled()
   })
+
+  it('returns empty array when parsed XML is null or CRS missing', () => {
+    expect(parser.extractCRSFromXML(null, 'l1')).toEqual([])
+
+    const parsedNoCRS = {
+      WMS_Capabilities: {
+        Capability: {
+          Layer: { Layer: { Name: 'l1' } },
+        },
+      },
+    }
+
+    expect(parser.extractCRSFromXML(parsedNoCRS as any, 'l1')).toEqual([])
+  })
 })

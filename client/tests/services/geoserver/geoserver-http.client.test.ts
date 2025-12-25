@@ -36,6 +36,25 @@ describe('GeoserverHttpClient', () => {
     expect(headers['Authorization']).toBeUndefined()
   })
 
+  it('does not include authorization when credentials missing', () => {
+    const cfg = makeConfig({ credentials: { username: null, password: null } })
+    const client = new GeoserverHttpClient(proxyUrl, cfg as any)
+    const headers = client.getDefaultHeaders(true)
+    expect(headers['Authorization']).toBeUndefined()
+  })
+
+  it('does not include base url or session when absent', () => {
+    const cfg = {
+      getGeoserverUrl: () => null,
+      getCredentials: () => ({ username: 'u', password: 'p' }),
+      getSessionId: () => null,
+    }
+    const client = new GeoserverHttpClient(proxyUrl, cfg as any)
+    const headers = client.getDefaultHeaders(true)
+    expect(headers['X-GeoServer-BaseUrl']).toBeUndefined()
+    expect(headers['X-Session-Id']).toBeUndefined()
+  })
+
   it('getBaseUrl returns proxy geoserver base', () => {
     const client = new GeoserverHttpClient(proxyUrl, makeConfig() as any)
     expect(client.getBaseUrl()).toBe(`${proxyUrl}/geoserver`)

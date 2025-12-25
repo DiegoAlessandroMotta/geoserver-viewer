@@ -54,4 +54,28 @@ describe('WMSCapabilitiesCache', () => {
     expect(res).toBeNull()
     expect(logger.error).toHaveBeenCalled()
   })
+
+  it('returns null when parser returns null', async () => {
+    http.fetchText.mockResolvedValue('<xml/>')
+    parser.parseXML.mockReturnValue(null)
+    const res = await cache.get()
+    expect(res).toBeNull()
+  })
+
+  it('shares a single promise for concurrent gets', async () => {
+    let resolve: any
+    const p = new Promise((r) => (resolve = r))
+    http.fetchText.mockReturnValue(p)
+    parser.parseXML.mockReturnValue({ foo: 'bar' })
+
+    const a = cache.get()
+    const b = cache.get()
+
+    expect(http.fetchText).toHaveBeenCalledTimes(1)
+
+    resolve('<xml/>')
+    const [ra, rb] = await Promise.all([a, b])
+    expect(ra).toEqual({ foo: 'bar' })
+    expect(rb).toEqual({ foo: 'bar' })
+  })
 })

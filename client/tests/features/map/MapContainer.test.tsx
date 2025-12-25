@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, act } from '@testing-library/react'
 import React, { useEffect } from 'react'
 import { MapContainer } from '@/features/map/MapContainer'
-import { geoserverService } from '@/shared/providers' 
+import { geoserverService } from '@/shared/providers'
 
 vi.mock('react-map-gl/maplibre', () => {
   return {
@@ -18,9 +18,10 @@ vi.mock('react-map-gl/maplibre', () => {
         return (
           <div
             data-testid="mock-map"
-            data-transform={JSON.stringify(
-              transformRequest('/geoserver/test', ''),
-            )}
+            data-transform={JSON.stringify({
+              withGeo: transformRequest('/geoserver/test', ''),
+              withoutGeo: transformRequest('/other/test', ''),
+            })}
           >
             <button
               data-testid="trigger-move"
@@ -49,8 +50,11 @@ describe('MapContainer', () => {
     render(<MapContainer />)
 
     const map = screen.getByTestId('mock-map')
-    const transform = JSON.parse(map.getAttribute('data-transform') || '{}')
-    expect(transform.headers).toEqual({ Authorization: 'x' })
+    const transform: any = JSON.parse(
+      map.getAttribute('data-transform') || '{}',
+    )
+    expect(transform.withGeo.headers).toEqual({ Authorization: 'x' })
+    expect(transform.withoutGeo.headers).toBeUndefined()
   })
 
   it('updates displayed zoom on map move', async () => {
@@ -66,5 +70,39 @@ describe('MapContainer', () => {
 
     const updated = await screen.findByText(/Zoom: 7.50/)
     expect(updated).toBeTruthy()
+  })
+
+  it('does not update zoom when map ref is not available', async () => {
+    vi.resetModules()
+    vi.doMock('react-map-gl/maplibre', () => ({
+      __esModule: true,
+      default: ({ transformRequest, onMove, children }: any) => (
+        <div
+          data-testid="mock-map-no-ref"
+          data-transform={JSON.stringify(transformRequest('/other/test', ''))}
+        >
+          <button
+            data-testid="trigger-move-no-ref"
+            onClick={() => onMove && onMove({})}
+          />
+          {children}
+        </div>
+      ),
+      NavigationControl: () => null,
+      ScaleControl: () => null,
+    }))
+
+    const { MapContainer: MapNoRef } =
+      await import('@/features/map/MapContainer')
+
+    render(<MapNoRef />)
+
+    const initial = screen.getByText(/Zoom:/)
+    expect(initial).toBeTruthy()
+
+    const btn = screen.getByTestId('trigger-move-no-ref')
+    act(() => btn.click())
+
+    expect(screen.queryByText(/Zoom: 7.50/)).toBeNull()
   })
 })

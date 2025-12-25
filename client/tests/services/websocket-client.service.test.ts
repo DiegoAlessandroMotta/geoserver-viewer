@@ -57,7 +57,28 @@ describe('WebsocketClient', () => {
     expect(inst.url).toBe(expected)
   })
 
-  it('forwards messages to registered listeners', () => {
+  it('forwards messages to registered listeners and ignores listener errors', () => {
+    const client = new WebsocketClient({
+      WSClass: MockWS as any,
+      config: { proxyUrl: '', basePath: '' } as any,
+    } as any)
+    client.connect()
+
+    const good = vi.fn()
+    const bad = vi.fn(() => {
+      throw new Error('boom')
+    })
+
+    client.onMessage(bad)
+    client.onMessage(good)
+
+    const inst = MockWS.lastInstance
+    inst.onmessage?.({ data: JSON.stringify({ type: 'ping', hello: 1 }) })
+
+    expect(good).toHaveBeenCalledWith({ type: 'ping', hello: 1 })
+  })
+
+  it('onMessage returns unsubscribe function', () => {
     const client = new WebsocketClient({
       WSClass: MockWS as any,
       config: { proxyUrl: '', basePath: '' } as any,
@@ -66,11 +87,10 @@ describe('WebsocketClient', () => {
 
     const listener = vi.fn()
     const off = client.onMessage(listener)
-
     const inst = MockWS.lastInstance
-    inst.onmessage?.({ data: JSON.stringify({ type: 'ping', hello: 1 }) })
 
-    expect(listener).toHaveBeenCalledWith({ type: 'ping', hello: 1 })
+    inst.onmessage?.({ data: JSON.stringify({ type: 'ping', hello: 1 }) })
+    expect(listener).toHaveBeenCalledTimes(1)
 
     off()
     inst.onmessage?.({ data: JSON.stringify({ type: 'ping', hello: 2 }) })
