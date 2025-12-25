@@ -1,19 +1,18 @@
 import { createContext } from 'react'
 
 export interface LayerInfo {
-  name: string
-  short?: string
+  fullName: string
+  layerName?: string
   title?: string
   workspace?: string | null
   store?: string | null
   type?: string
-  fullName?: string
   defaultStyle?: string | null
-  crs?: string[]
+  crs: string[]
   dateCreated?: string | null
   dateModified?: string | null
   enabled?: boolean
-  color?: string
+  color: string
   minZoom?: number
   maxZoom?: number
 }

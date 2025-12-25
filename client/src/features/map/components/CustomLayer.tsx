@@ -13,10 +13,10 @@ export const CustomLayer = ({ layer }: Props) => {
     return null
   }
 
-  const tilesUrl = geoserverService.getVectorTileUrl(layer.name)
+  const tilesUrl = geoserverService.getVectorTileUrl(layer.fullName)
 
-  const shortName = layer.short
-  const sourceId = layer.name
+  const shortName = layer.layerName
+  const sourceId = layer.fullName
   const visibility = layer.enabled ? 'visible' : 'none'
   const baseColor = layer.color
   const outlineColor = '#000000'
@@ -35,7 +35,7 @@ export const CustomLayer = ({ layer }: Props) => {
         source-layer={shortName}
         layout={{ visibility }}
         paint={{
-          'fill-color': layer.color,
+          'fill-color': baseColor,
           'fill-opacity': 0.4,
           'fill-outline-color': outlineColor,
         }}

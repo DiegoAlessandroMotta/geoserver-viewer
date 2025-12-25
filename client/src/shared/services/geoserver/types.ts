@@ -30,16 +30,15 @@ export type LayerDetailsResponse = {
 export type ParsedCapabilities = Record<string, any>
 
 export interface DetailedLayer {
-  name: string
+  fullName: string
   title?: string
-  short?: string
+  layerName?: string
   workspace?: string | null
   store?: string | null
   type?: string
-  fullName?: string
   defaultStyle?: string | null
-  crs?: string[]
+  crs: string[]
   dateCreated?: string | null
   dateModified?: string | null
-  color?: string | null
+  color: string
 }

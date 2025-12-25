@@ -9,8 +9,8 @@ describe('LayerItem', () => {
     const onToggle = vi.fn()
     const onZoom = vi.fn()
     const layer: any = {
-      name: 'ns:l1',
-      short: 'l1',
+      fullName: 'ns:l1',
+      layerName: 'l1',
       enabled: false,
       workspace: 'ws',
       store: 'st',
@@ -40,12 +40,24 @@ describe('LayerItem', () => {
     expect(screen.getByText(/CRS:/)).toBeTruthy()
   })
 
+  it('shows title when title is present and different from short', () => {
+    const onToggle = vi.fn()
+    const onZoom = vi.fn()
+    const layer: any = { fullName: 'ns:t1', layerName: 's1', title: 'TITLE 1', enabled: false, color: '#fff' }
+
+    render(<LayerItem layer={layer} onToggle={onToggle} onZoomChange={onZoom} />)
+
+    expect(screen.getByText('TITLE 1')).toBeTruthy()
+    fireEvent.click(screen.getByText('TITLE 1'))
+    expect(onToggle).toHaveBeenCalled()
+  })
+
   it('debounces zoom changes and calls onZoomChange', async () => {
     vi.useFakeTimers()
     const onZoom = vi.fn()
     const layer: any = {
-      name: 'ns:l2',
-      short: 'l2',
+      fullName: 'ns:l2',
+      layerName: 'l2',
       enabled: true,
       color: '#000',
       minZoom: 1,
@@ -74,7 +86,7 @@ describe('LayerItem', () => {
 
   it('resets min/max when layer name changes', () => {
     const onZoom = vi.fn()
-    const layer1: any = { name: 'a', short: 'a', minZoom: 2, maxZoom: 5, color: '#000' }
+    const layer1: any = { fullName: 'a', layerName: 'a', minZoom: 2, maxZoom: 5, color: '#000' }
     const { rerender } = render(
       <LayerItem layer={layer1} onToggle={vi.fn()} onZoomChange={onZoom} />,
     )
@@ -86,7 +98,7 @@ describe('LayerItem', () => {
     expect(inputs[0].value).toBe('2')
     expect(inputs[1].value).toBe('5')
 
-    const layer2: any = { name: 'b', short: 'b', minZoom: 8, maxZoom: 12, color: '#000' }
+    const layer2: any = { fullName: 'b', layerName: 'b', minZoom: 8, maxZoom: 12, color: '#000' }
     rerender(<LayerItem layer={layer2} onToggle={vi.fn()} onZoomChange={onZoom} />)
 
     const inputs2 = screen.getAllByRole('spinbutton') as HTMLInputElement[]
@@ -97,7 +109,7 @@ describe('LayerItem', () => {
   it('clamps min and adjusts max when min > max', async () => {
     vi.useFakeTimers()
     const onZoom = vi.fn()
-    const layer: any = { name: 'c', short: 'c', minZoom: 1, maxZoom: 10, color: '#000' }
+    const layer: any = { fullName: 'c', layerName: 'c', minZoom: 1, maxZoom: 10, color: '#000' }
     render(<LayerItem layer={layer} onToggle={vi.fn()} onZoomChange={onZoom} />)
 
     const expBtn = screen.getByRole('button')
@@ -118,7 +130,7 @@ describe('LayerItem', () => {
   it('clamps max and adjusts min when max < min', async () => {
     vi.useFakeTimers()
     const onZoom = vi.fn()
-    const layer: any = { name: 'd', short: 'd', minZoom: 5, maxZoom: 20, color: '#000' }
+    const layer: any = { fullName: 'd', layerName: 'd', minZoom: 5, maxZoom: 20, color: '#000' }
     render(<LayerItem layer={layer} onToggle={vi.fn()} onZoomChange={onZoom} />)
 
     const expBtn = screen.getByRole('button')

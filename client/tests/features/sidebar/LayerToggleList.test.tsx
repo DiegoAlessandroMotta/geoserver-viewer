@@ -9,7 +9,7 @@ const baseCtx = {
 }
 
 vi.mock('@/features/sidebar/components/LayerItem', () => ({
-  LayerItem: (props: any) => <div data-testid={`li-${props.layer.name}`}>{props.layer.name}</div>,
+  LayerItem: (props: any) => <div data-testid={`li-${props.layer.fullName}`}>{props.layer.fullName}</div>,
 }))
 
 import * as layerHook from '@/shared/context/layer/useLayerContext'
@@ -85,8 +85,8 @@ describe('LayerToggleList', () => {
 
   it('renders LayerItem elements when layers present', () => {
     const m = new Map()
-    m.set('a', { name: 'a', short: 'a' })
-    m.set('b', { name: 'b', short: 'b' })
+    m.set('a', { fullName: 'a', layerName: 'a' })
+    m.set('b', { fullName: 'b', layerName: 'b' })
 
     vi.spyOn(layerHook, 'useLayerContext').mockReturnValue({
       layers: m,

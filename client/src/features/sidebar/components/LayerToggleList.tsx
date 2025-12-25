@@ -62,10 +62,10 @@ export const LayerToggleList = () => {
       <div className="flex-1 min-h-0 overflow-y-auto space-y-1 px-2 mt-1">
         {layersArray.map((l) => (
           <LayerItem
-            key={l.name}
+            key={l.fullName}
             layer={l}
-            onToggle={() => toggleLayer(l.name)}
-            onZoomChange={(min, max) => setLayerZooms(l.name, min, max)}
+            onToggle={() => toggleLayer(l.fullName)}
+            onZoomChange={(min, max) => setLayerZooms(l.fullName, min, max)}
           />
         ))}
       </div>

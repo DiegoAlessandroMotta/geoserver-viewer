@@ -97,8 +97,8 @@ describe('LayerContextProvider', () => {
       .spyOn(geoserverService, 'fetchWMSLayers')
       .mockResolvedValue([
         {
-          name: 'L1',
-          short: 's',
+          fullName: 'L1',
+          layerName: 's',
           title: 't',
           workspace: 'w',
           store: 'st',
@@ -164,8 +164,8 @@ describe('LayerContextProvider', () => {
   it('logs when layer zoom in localStorage is invalid JSON', async () => {
     vi.spyOn(geoserverService, 'fetchWMSLayers').mockResolvedValueOnce([
       {
-        name: 'L1',
-        short: 's',
+        fullName: 'L1',
+        layerName: 's',
         title: 't',
         workspace: 'w',
         store: 'st',
@@ -288,8 +288,8 @@ describe('LayerContextProvider', () => {
     )
     vi.spyOn(geoserverService, 'fetchWMSLayers').mockResolvedValueOnce([
       {
-        name: 'L1',
-        short: 's',
+        fullName: 'L1',
+        layerName: 's',
         title: 't',
         workspace: 'w',
         store: 'st',

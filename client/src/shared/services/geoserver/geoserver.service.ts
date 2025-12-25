@@ -6,7 +6,10 @@ import { GeoserverParser } from '@/shared/services/geoserver/geoserver-parser'
 import { GeoserverLayerRepository } from '@/shared/services/geoserver/geoserver-layer.repository'
 import { WMSCapabilitiesCache } from '@/shared/services/geoserver/wms-capabilities.cache'
 import { ConcurrencyExecutor } from '@/shared/services/concurrency.executor'
-import type { ParsedCapabilities } from '@/shared/services/geoserver/types'
+import type {
+  DetailedLayer,
+  ParsedCapabilities,
+} from '@/shared/services/geoserver/types'
 interface GeoserverServiceOptions {
   proxyUrl: string
   logger: ILogger
@@ -78,7 +81,7 @@ export class GeoserverService {
 
   public fetchWMSLayers = async (
     workspace: string,
-  ): Promise<import('@/shared/services/geoserver/types').DetailedLayer[]> => {
+  ): Promise<DetailedLayer[]> => {
     this.invalidateCache()
 
     const layersList = await this.layerRepo.fetchAllLayersFromREST()
@@ -123,20 +126,25 @@ export class GeoserverService {
         )
         const color = randomColorFromString(hexHash)
 
-        return {
-          name: layerName,
-          title: layer.title || layer.name || shortName,
-          short: shortName,
+        const title =
+          layer.title && layer.title !== shortName ? layer.title : undefined
+
+        const result: any = {
+          fullName: layerName,
+          layerName: shortName,
           workspace: resourceInfo.workspace || layerWorkspace,
           store: resourceInfo.store,
           type: layer.type,
-          fullName: layer.name,
           dateCreated: layer.dateCreated,
           dateModified: layer.dateModified,
           defaultStyle: layer.defaultStyle?.name,
-          crs,
-          color,
+          crs: crs ?? [],
+          color: color,
         }
+
+        if (title) result.title = title
+
+        return result
       },
     )
 

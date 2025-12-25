@@ -22,18 +22,19 @@ export const LayerItem = ({ layer, onToggle, onZoomChange }: Props) => {
   )
   const [maxLocal, setMaxLocal] = useState(layer.maxZoom ?? globalMaxZoom)
 
-  const prevLayerIdRef = useRef(layer.name)
+  const prevLayerIdRef = useRef(layer.fullName)
   useEffect(() => {
-    if (layer.name !== prevLayerIdRef.current) {
-      prevLayerIdRef.current = layer.name
+    if (layer.fullName !== prevLayerIdRef.current) {
+      prevLayerIdRef.current = layer.fullName
       // eslint-disable-next-line react-hooks/set-state-in-effect
       setMinLocal(layer.minZoom ?? globalMinZoom)
       setMaxLocal(layer.maxZoom ?? globalMaxZoom)
     }
-  }, [layer.name, layer.minZoom, layer.maxZoom, globalMinZoom, globalMaxZoom])
+  }, [layer.fullName, layer.minZoom, layer.maxZoom, globalMinZoom, globalMaxZoom])
 
   const debouncedMin = useDebounce(minLocal, 300)
   const debouncedMax = useDebounce(maxLocal, 300)
+
 
   useEffect(() => {
     const currentMin = layer.minZoom ?? globalMinZoom
@@ -99,7 +100,7 @@ export const LayerItem = ({ layer, onToggle, onZoomChange }: Props) => {
             className="text-sm font-medium text-gray-800 truncate flex-1 max-w-44 py-2 cursor-pointer"
             onClick={() => onToggle()}
           >
-            {layer.short}
+            {layer.title ?? layer.layerName ?? layer.fullName}
           </span>
           <button
             onClick={() => setIsExpanded(!isExpanded)}

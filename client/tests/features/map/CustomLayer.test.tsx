@@ -27,8 +27,8 @@ describe('CustomLayer', () => {
 
   it('renders source and three layers for vector layer with expected props', () => {
     const layer: any = {
-      name: 'ns:myLayer',
-      short: 'myLayer',
+      fullName: 'ns:myLayer',
+      layerName: 'myLayer',
       enabled: true,
       color: '#abcd12',
       minZoom: 2,

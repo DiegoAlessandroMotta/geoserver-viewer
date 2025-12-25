@@ -70,14 +70,14 @@ export const LayerContextProvider = ({
   const isConfigured = Boolean(geoserverUrl && configWorkspace)
   const mountedRef = useRef(true)
 
-  const setLayerEnabled = useCallback((layerName: string, enabled: boolean) => {
+  const setLayerEnabled = useCallback((fullName: string, enabled: boolean) => {
     setLayersMap((prev) => {
       const copy = new Map(prev)
-      const existing = copy.get(layerName)
+      const existing = copy.get(fullName)
       if (existing) {
-        copy.set(layerName, { ...existing, enabled })
+        copy.set(fullName, { ...existing, enabled })
       } else {
-        copy.set(layerName, { name: layerName, enabled })
+        copy.set(fullName, { fullName, crs: [], color: '#000000', enabled })
       }
       return copy
     })
@@ -89,7 +89,9 @@ export const LayerContextProvider = ({
       const existing = copy.get(layerName)
       copy.set(layerName, {
         ...existing,
-        name: layerName,
+        fullName: layerName,
+        crs: existing?.crs ?? [],
+        color: existing?.color ?? '#000000',
         enabled: !(existing?.enabled ?? false),
       })
       return copy
@@ -105,7 +107,9 @@ export const LayerContextProvider = ({
         const existing = copy.get(layerName)
         copy.set(layerName, {
           ...existing,
-          name: layerName,
+          fullName: layerName,
+          crs: existing?.crs ?? [],
+          color: existing?.color ?? '#000000',
           minZoom,
           maxZoom,
         })
@@ -154,21 +158,20 @@ export const LayerContextProvider = ({
 
         setAuthRequired(false)
 
-        const newLayers = new Map()
+        const newLayers: Map<string, LayerInfo> = new Map()
 
-        rawLayers.forEach((l: any) => {
-          const name = l.name || l.title || l.short
+        rawLayers.forEach((l) => {
+          const key = String(l.fullName || l.title || l.layerName)
 
-          const savedZoom = getLayerZoomFromStorage(name)
+          const savedZoom = getLayerZoomFromStorage(key)
 
-          newLayers.set(name, {
-            name,
-            short: l.short,
+          newLayers.set(key, {
+            fullName: l.fullName,
+            layerName: l.layerName,
             title: l.title,
             workspace: l.workspace,
             store: l.store,
             type: l.type,
-            fullName: l.name,
             defaultStyle: l.defaultStyle,
             crs: l.crs,
             dateCreated: l.dateCreated,

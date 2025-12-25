@@ -8,7 +8,7 @@ export const MapLayers = () => {
   return (
     <>
       {layersArray.map((layer) => (
-        <CustomLayer key={layer.name} layer={layer} />
+        <CustomLayer key={layer.fullName} layer={layer} />
       ))}
     </>
   )

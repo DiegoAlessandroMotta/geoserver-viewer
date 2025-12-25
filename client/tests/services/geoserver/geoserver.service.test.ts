@@ -54,16 +54,40 @@ describe('GeoserverService', () => {
     const res = await svc.fetchWMSLayers('ws')
 
     expect(res.length).toBe(2)
-    expect(res[0]).toHaveProperty('name', 'ws:my_layer')
+    expect(res[0]).toHaveProperty('fullName', 'ws:my_layer')
     expect(res[0]).toHaveProperty('title', 'ws:my_layer-title')
-    expect(res[0]).toHaveProperty('short', 'my_layer')
+    expect(res[0]).toHaveProperty('layerName', 'my_layer')
     expect(res[0]).toHaveProperty('workspace', 'ws')
     expect(res[0]).toHaveProperty('store', 'store')
     expect(res[0]).toHaveProperty('type', 'VECTOR')
-    expect(res[0]).toHaveProperty('fullName', 'ws:my_layer')
     expect(res[0]).toHaveProperty('defaultStyle', 's1')
     expect(res[0].crs).toEqual(['EPSG:4326'])
     expect(res[0].color).toMatch(/^#/)
+  })
+
+  it('omits title when equal to short name', async () => {
+    const layerList = [{ name: 'ws:my_layer' }]
+    ;(svc as any).layerRepo.fetchAllLayersFromREST = vi
+      .fn()
+      .mockResolvedValue(layerList)
+    ;(svc as any).wmsCache.get = vi.fn().mockResolvedValue({})
+    ;(svc as any).layerRepo.fetchLayerDetails = vi
+      .fn()
+      .mockImplementation(async (name: string) => ({
+        layer: {
+          name: name,
+          title: 'my_layer',
+          resource: { '@href': '/workspaces/ws/datastores/store' },
+          type: 'VECTOR',
+        },
+      }))
+    ;(svc as any).parser.extractCRSFromXML = vi.fn().mockReturnValue([])
+
+    const res = await svc.fetchWMSLayers('ws')
+    expect(res.length).toBe(1)
+    expect(res[0]).toHaveProperty('layerName', 'my_layer')
+    expect(res[0]).toHaveProperty('fullName', 'ws:my_layer')
+    expect(res[0]).not.toHaveProperty('title')
   })
 
   it('returns empty array when no layers found and logs warning', async () => {
