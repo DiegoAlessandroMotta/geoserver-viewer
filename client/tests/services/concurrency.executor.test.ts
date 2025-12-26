@@ -40,4 +40,36 @@ describe('ConcurrencyExecutor', () => {
     const res = await exec.run(items, async (n) => n * 10)
     expect(res).toEqual([10, 20, 30])
   })
+
+  it('honors concurrency limits under load', async () => {
+    const exec = new ConcurrencyExecutor(2)
+    const items = [1, 2, 3, 4, 5]
+    let active = 0
+    let maxActive = 0
+
+    const res = await exec.run(items, async (n) => {
+      active++
+      maxActive = Math.max(maxActive, active)
+      await new Promise((r) => setTimeout(r, 20))
+      active--
+      return n
+    })
+
+    expect(maxActive).toBeLessThanOrEqual(2)
+    expect(res).toEqual([1, 2, 3, 4, 5])
+  })
+
+  it('handles aborted tasks as null and logs error', async () => {
+    const logger = { error: vi.fn() }
+    const exec = new ConcurrencyExecutor(2, logger as any)
+    const items = [1, 2]
+
+    const res = await exec.run(items, async (n) => {
+      if (n === 1) throw new DOMException('Aborted', 'AbortError')
+      return n
+    })
+
+    expect(res).toEqual([null, 2])
+    expect(logger.error as any).toHaveBeenCalled()
+  })
 })

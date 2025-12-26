@@ -4,7 +4,7 @@ import { GeoserverAuthRequiredError } from '@/shared/errors/geoserver-auth-requi
 
 const makeHttp = (impl: any = {}) => ({ fetchText: vi.fn(impl.fetchText) })
 const makeParser = (impl: any = {}) => ({ parseXML: vi.fn(impl.parseXML) })
-const makeLogger = () => ({ error: vi.fn() })
+const makeLogger = () => ({ error: vi.fn(), debug: vi.fn() })
 
 describe('WMSCapabilitiesCache', () => {
   let http: any
@@ -77,5 +77,42 @@ describe('WMSCapabilitiesCache', () => {
     const [ra, rb] = await Promise.all([a, b])
     expect(ra).toEqual({ foo: 'bar' })
     expect(rb).toEqual({ foo: 'bar' })
+  })
+
+  it('returns null on AbortError and logs debug message', async () => {
+    const abortErr = new DOMException('Aborted', 'AbortError')
+    http.fetchText.mockRejectedValue(abortErr)
+
+    const res = await cache.get()
+    expect(res).toBeNull()
+    expect(logger.debug).toHaveBeenCalledWith(
+      expect.objectContaining({ msg: 'WMSCapabilitiesCache.get: aborted' }),
+    )
+  })
+
+  it('invalidate aborts pending request and subsequent get fetches again', async () => {
+    let rejectFn: any
+    const pending = new Promise((_r, rej) => (rejectFn = rej))
+    http.fetchText.mockReturnValue(pending)
+    parser.parseXML.mockReturnValue({ foo: 'old' })
+
+    const p1 = cache.get()
+
+    // invalidate should abort controller and clear promises
+    cache.invalidate()
+
+    // simulate the underlying fetch rejecting with AbortError
+    rejectFn(new DOMException('Aborted', 'AbortError'))
+
+    const r1 = await p1
+    expect(r1).toBeNull()
+
+    // Now a new get should perform another fetch
+    http.fetchText.mockResolvedValue('<xml/>')
+    parser.parseXML.mockReturnValue({ foo: 'new' })
+
+    const r2 = await cache.get()
+    expect(r2).toEqual({ foo: 'new' })
+    expect(http.fetchText).toHaveBeenCalledTimes(2)
   })
 })

@@ -1,11 +1,14 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { CustomLayer } from '@/features/map/components/CustomLayer'
+import { geoserverService } from '@/shared/providers'
 
 vi.mock('react-map-gl/maplibre', () => ({
   __esModule: true,
   Source: ({ id, children, tiles }: any) => (
-    <div data-testid={`source-${id}`} data-tiles={JSON.stringify(tiles)}>{children}</div>
+    <div data-testid={`source-${id}`} data-tiles={JSON.stringify(tiles)}>
+      {children}
+    </div>
   ),
   Layer: (props: any) => (
     <div
@@ -52,5 +55,25 @@ describe('CustomLayer', () => {
 
     const layout = JSON.parse(fill.getAttribute('data-layout') || '{}')
     expect(layout.visibility).toBe('visible')
+  })
+
+  it('handles missing optional fields and calls getVectorTileUrl', () => {
+    const spy = vi
+      .spyOn(geoserverService, 'getVectorTileUrl')
+      .mockReturnValue('vtile://url' as any)
+
+    const layer: any = {
+      fullName: 'ns:min',
+      layerName: 'min',
+      enabled: true,
+      type: 'VECTOR',
+    }
+
+    const { container } = render(<CustomLayer layer={layer} />)
+
+    expect(
+      container.querySelector('[data-testid="source-ns:min"]'),
+    ).toBeTruthy()
+    expect(spy).toHaveBeenCalledWith('ns:min')
   })
 })

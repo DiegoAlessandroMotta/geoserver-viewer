@@ -114,6 +114,66 @@ describe('GeoserverService', () => {
     expect(logger.warn).toHaveBeenCalled()
   })
 
+  it('uses WMS capabilities when REST details lack CRS', async () => {
+    const layerList = [{ name: 'ws:my_layer' }]
+    ;(svc as any).layerRepo.fetchAllLayersFromREST = vi
+      .fn()
+      .mockResolvedValue(layerList)
+    ;(svc as any).wmsCache.get = vi
+      .fn()
+      .mockResolvedValue({ caps: 'xml' } as any)
+    ;(svc as any).layerRepo.fetchLayerDetails = vi.fn().mockResolvedValue({
+      layer: {
+        name: 'ws:my_layer',
+        resource: { href: '/workspaces/ws/datastores/store' },
+        type: 'VECTOR',
+        dateCreated: null,
+        dateModified: null,
+        defaultStyle: { name: 's1' },
+      },
+    })
+    ;(svc as any).parser.extractCRSFromXML = vi
+      .fn()
+      .mockReturnValue(['EPSG:3857'])
+
+    vi.spyOn(utils, 'generateSHA1HexHash').mockResolvedValue('deadbeef')
+
+    const res = await svc.fetchWMSLayers('ws')
+    expect((svc as any).wmsCache.get).toHaveBeenCalled()
+    expect((svc as any).parser.extractCRSFromXML).toHaveBeenCalledWith(
+      expect.anything(),
+      'my_layer',
+    )
+    expect(res.length).toBe(1)
+    expect(res[0].crs).toEqual(['EPSG:3857'])
+  })
+
+  it('skips layer when capabilities fetch returns null (abort)', async () => {
+    const layerList = [{ name: 'ws:my_layer' }]
+    ;(svc as any).layerRepo.fetchAllLayersFromREST = vi
+      .fn()
+      .mockResolvedValue(layerList)
+    ;(svc as any).wmsCache.get = vi.fn().mockResolvedValue(null)
+    ;(svc as any).layerRepo.fetchLayerDetails = vi.fn().mockResolvedValue({
+      layer: {
+        name: 'ws:my_layer',
+        resource: { href: '/workspaces/ws/datastores/store' },
+        type: 'VECTOR',
+      },
+    })
+
+    const debugSpy = vi.spyOn((svc as any).logger, 'debug')
+
+    const res = await svc.fetchWMSLayers('ws')
+    expect(res).toEqual([])
+    expect(debugSpy).toHaveBeenCalledWith(
+      expect.objectContaining({
+        msg: 'fetchWMSLayers: capabilities fetch canceled or returned null',
+        layer: 'ws:my_layer',
+      }),
+    )
+  })
+
   it('parses resource href without @href and extracts workspace/store', async () => {
     ;(svc as any).layerRepo.fetchAllLayersFromREST = vi
       .fn()
@@ -121,7 +181,7 @@ describe('GeoserverService', () => {
     ;(svc as any).layerRepo.fetchLayerDetails = vi.fn().mockResolvedValue({
       layer: {
         name: 'prefix:layerx',
-        title: 't',
+
         resource: { href: '/workspaces/ws2/datastores/store2' },
         type: 'VECTOR',
       },
@@ -142,7 +202,7 @@ describe('GeoserverService', () => {
     ;(svc as any).layerRepo.fetchLayerDetails = vi.fn().mockResolvedValue({
       layer: {
         name: 'ns:layery',
-        title: 't',
+
         resource: { href: '/not/matching/format' },
         type: 'VECTOR',
       },
@@ -154,6 +214,48 @@ describe('GeoserverService', () => {
     expect(res.length).toBe(1)
     expect(res[0]).toHaveProperty('workspace', 'ns')
     expect(res[0]).toHaveProperty('store', null)
+  })
+
+  it('parses coveragestores and stores in resource href', async () => {
+    ;(svc as any).layerRepo.fetchAllLayersFromREST = vi
+      .fn()
+      .mockResolvedValue([{ name: 'pref:l1' }])
+    ;(svc as any).layerRepo.fetchLayerDetails = vi.fn().mockResolvedValue({
+      layer: {
+        name: 'pref:l1',
+
+        resource: { href: '/workspaces/ws/coveragestores/store2' },
+        type: 'VECTOR',
+      },
+    })
+    ;(svc as any).wmsCache.get = vi.fn().mockResolvedValue({})
+    ;(svc as any).parser.extractCRSFromXML = vi.fn().mockReturnValue([])
+
+    const res = await svc.fetchWMSLayers('ws')
+    expect(res.length).toBe(1)
+    expect(res[0]).toHaveProperty('workspace', 'ws')
+    expect(res[0]).toHaveProperty('store', 'store2')
+  })
+
+  it('decodes workspace and store names from percent-encoding', async () => {
+    ;(svc as any).layerRepo.fetchAllLayersFromREST = vi
+      .fn()
+      .mockResolvedValue([{ name: 'enc:l1' }])
+    ;(svc as any).layerRepo.fetchLayerDetails = vi.fn().mockResolvedValue({
+      layer: {
+        name: 'enc:l1',
+
+        resource: { href: '/workspaces/ws%20name/datastores/my%20store' },
+        type: 'VECTOR',
+      },
+    })
+    ;(svc as any).wmsCache.get = vi.fn().mockResolvedValue({})
+    ;(svc as any).parser.extractCRSFromXML = vi.fn().mockReturnValue([])
+
+    const res = await svc.fetchWMSLayers('ws')
+    expect(res.length).toBe(1)
+    expect(res[0]).toHaveProperty('workspace', 'ws name')
+    expect(res[0]).toHaveProperty('store', 'my store')
   })
 
   it('delegates getDefaultHeaders and getVectorTileUrl to http client', () => {

@@ -108,7 +108,6 @@ describe('LayerContextProvider', () => {
           dateModified: null,
           color: '#fff',
         },
-
       ])
 
     render(
@@ -411,5 +410,67 @@ describe('LayerContextProvider', () => {
     })
 
     expect(fetchSpy).not.toHaveBeenCalled()
+  })
+
+  it('does not update state after unmount when refresh resolves later', async () => {
+    let resolveFn: any
+    const p = new Promise((r) => (resolveFn = r))
+    const fetchSpy2 = vi
+      .spyOn(geoserverService, 'fetchWMSLayers')
+      .mockReturnValue(p as any)
+    const loggerDebug = vi.spyOn(logger, 'debug')
+
+    const { unmount } = render(
+      <GeoserverConfigContext.Provider
+        value={{
+          geoserverUrl: 'http://g',
+          workspace: 'w',
+          setConfig: () => {},
+          clearConfig: () => {},
+          setCredentials: () => {},
+          getCredentials: () => ({ username: null, password: null }),
+          clearCredentials: () => {},
+          areCredentialsPersisted: () => false,
+          credentials: { username: null, password: null },
+        }}
+      >
+        <LayerContextProvider>
+          <Consumer />
+        </LayerContextProvider>
+      </GeoserverConfigContext.Provider>,
+    )
+
+    await act(async () => {
+      screen.getByText('refresh').click()
+    })
+
+    unmount()
+
+    resolveFn([
+      {
+        fullName: 'L1',
+        layerName: 's',
+        workspace: 'w',
+        store: 'st',
+        type: 't',
+        defaultStyle: null,
+        crs: ['EPSG:4326'],
+        dateCreated: null,
+        dateModified: null,
+        color: '#fff',
+      },
+    ])
+
+    void fetchSpy2
+
+    await act(async () => {
+      await Promise.resolve()
+    })
+
+    expect(loggerDebug).toHaveBeenCalledWith(
+      expect.objectContaining({
+        msg: 'LayerContextProvider.refreshLayers: mountedRef not found, skipping update',
+      }),
+    )
   })
 })
