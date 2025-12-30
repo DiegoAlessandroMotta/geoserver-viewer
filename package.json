@@ -29,6 +29,7 @@
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
+    "@types/uuid": "^11.0.0",
     "concurrently": "^9.2.1",
     "eslint": "^9.39.1",
     "prettier": "^3.7.4"
@@ -44,6 +45,7 @@
   ],
   "dependencies": {
     "husky": "^9.1.7",
-    "lint-staged": "^16.2.7"
+    "lint-staged": "^16.2.7",
+    "uuid": "^9.0.1"
   }
 }

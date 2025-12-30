@@ -1,5 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { GeoserverConfigManagerService } from '@/shared/services/geoserver/geoserver-config-manager.service'
+import * as uuid from '@/shared/lib/uuid'
 
 class MockStorage {
   private map = new Map<string, string>()
@@ -153,8 +154,8 @@ describe('GeoserverConfigManagerService', () => {
     expect(logger.error).toHaveBeenCalled()
   })
 
-  it('generates deterministic sessionId when crypto.randomUUID is stubbed', () => {
-    const rnd = vi.spyOn(crypto as any, 'randomUUID').mockReturnValue('uuid-1')
+  it('generates deterministic sessionId when uuid helper is stubbed', () => {
+    const rnd = vi.spyOn(uuid, 'generateUuid').mockReturnValue('uuid-1')
     const mgr = new GeoserverConfigManagerService({
       storage: storage as any,
       logger,

@@ -1,4 +1,5 @@
 import type { ILogger } from '@/shared/interfaces/logger.interface'
+import { generateUuid } from '@/shared/lib/uuid'
 
 export interface GeoserverCredentials {
   username: string | null
@@ -47,7 +48,7 @@ export class GeoserverConfigManagerService {
 
     this.geoserverUrl = this.storage.getItem(LOCAL_STORAGE_URL_KEY) ?? null
     this.workspace = this.storage.getItem(LOCAL_STORAGE_WORKSPACE_KEY) ?? null
-    this.sessionId = crypto.randomUUID()
+    this.sessionId = generateUuid()
     this.credentials = {
       username: null,
       password: null,
