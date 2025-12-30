@@ -97,4 +97,8 @@ Para probar la app con Docker Compose.
 - Si usas Docker, los contenedores se construyen usando los Dockerfile en `client/` y `server/`.
 - En modo desarrollo, asegúrate que `VITE_PROXY_URL` apunte al servidor (por defecto `http://localhost:3001/api/proxy`).
 
-# Pre-commit test
+## Hooks de pre-commit
+
+Este repositorio usa **Husky** junto con **lint-staged** para ejecutar **Prettier** y **ESLint** sobre los archivos en stage en cada commit. Si el formateo o el lint fallan, el commit se detiene y deberás corregir los archivos antes de volver a intentar.
+
+**Para saltar temporalmente los hooks:** `git commit --no-verify`.

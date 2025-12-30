@@ -24,19 +24,26 @@
     "format-check:client": "pnpm -F client format-check",
     "test:client": "pnpm -F client test",
     "test:coverage:client": "pnpm -F client test:coverage",
-    "copy-env": "node ./scripts/copy-env.mjs"
+    "copy-env": "node ./scripts/copy-env.mjs",
+    "prepare": "husky"
   },
   "devDependencies": {
     "@types/node": "^24.10.1",
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "eslint": "^9.39.1",
+    "prettier": "^3.7.4"
   },
   "private": true,
-  "packageManager": "pnpm@10.26.1",
+  "packageManager": "pnpm@10.27.0",
   "keywords": [],
   "author": "",
   "license": "ISC",
   "workspaces": [
     "client",
     "server"
-  ]
+  ],
+  "dependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.7"
+  }
 }
