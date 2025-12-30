@@ -12,7 +12,9 @@ describe('PinoLogger', () => {
   it('accepts messages and does not throw', () => {
     const logger = new PinoLogger()
     expect(() => logger.info('hello')).not.toThrow()
-    expect(() => logger.debug({ message: 'm', context: { a: 1 } })).not.toThrow()
+    expect(() =>
+      logger.debug({ message: 'm', context: { a: 1 } }),
+    ).not.toThrow()
     expect(() => logger.error('err')).not.toThrow()
   })
 })

@@ -16,9 +16,7 @@
     "skipLibCheck": true,
     "baseUrl": "./",
     "paths": {
-      "@/*": [
-        "./src/*"
-      ]
+      "@/*": ["./src/*"]
     },
     "plugins": [
       {
@@ -28,10 +26,7 @@
         "transform": "typescript-transform-paths",
         "afterDeclarations": true
       }
-    ],
+    ]
   },
-  "include": [
-    "src/**/*",
-    "tests/**/*",
-  ]
+  "include": ["src/**/*", "tests/**/*"]
 }

@@ -1,11 +1,7 @@
 {
-	"extends": "./tsconfig.app.json",
-	"compilerOptions": {
-		"noEmit": false
-	},
-	"exclude": [
-		"tests",
-		"**/*.test.*",
-		"**/*.spec.*"
-	]
+  "extends": "./tsconfig.app.json",
+  "compilerOptions": {
+    "noEmit": false
+  },
+  "exclude": ["tests", "**/*.test.*", "**/*.spec.*"]
 }

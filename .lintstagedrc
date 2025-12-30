@@ -1,7 +1,11 @@
 {
-	"*.{js,jsx,ts,tsx}": [
-		"pnpm -w exec -- prettier --write",
-		"pnpm -w exec -- eslint --fix"
+	"client/**/*.{js,jsx,ts,tsx}": [
+		"pnpm -C client exec -- prettier --write",
+		"pnpm -C client exec -- eslint --fix"
+	],
+	"server/**/*.{js,jsx,ts,tsx}": [
+		"pnpm -C server exec -- prettier --write",
+		"pnpm -C server exec -- eslint --fix"
 	],
 	"*.{json,md,css,scss,html}": [
 		"pnpm -w exec -- prettier --write"
