@@ -42,7 +42,6 @@ Si prefieres ejecutar la aplicación sin contenedores:
    ```
 
 3. Abre el cliente (Vite) en:
-
    - http://localhost:5173 (Vite) y debería usar por defecto `VITE_PROXY_URL=http://localhost:3001/api/proxy` para la API
 
 ## Docker
@@ -64,7 +63,6 @@ Para probar la app con Docker Compose.
    ```
 
 4. Abre la aplicación en el navegador:
-
    - Cliente (nginx): http://localhost:4000 (o el puerto configurado en `APP_PORT` en `.env`)
 
 > Nota: El cliente usa `VITE_PROXY_URL` para comunicarse con el backend. Si estás ejecutando la app localmente sin Docker, actualiza `VITE_PROXY_URL` en `client/.env.template`.
@@ -89,8 +87,8 @@ Para probar la app con Docker Compose.
 
 ## Linters & Formato
 
-- Lint client: `pnpm lint:client`  
-- Lint server: `pnpm lint:server`  
+- Lint client: `pnpm lint:client`
+- Lint server: `pnpm lint:server`
 - Formatear: `pnpm format:client` / `pnpm format:server`
 
 ## Notas útiles
@@ -98,3 +96,5 @@ Para probar la app con Docker Compose.
 - La versión por defecto del workspace utiliza `pnpm` como package manager.
 - Si usas Docker, los contenedores se construyen usando los Dockerfile en `client/` y `server/`.
 - En modo desarrollo, asegúrate que `VITE_PROXY_URL` apunte al servidor (por defecto `http://localhost:3001/api/proxy`).
+
+# Pre-commit test
