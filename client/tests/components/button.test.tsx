@@ -4,7 +4,11 @@ import { Button } from '@/shared/components/Button'
 
 describe('Button component', () => {
   it('renders children and applies classes for variant/size', () => {
-    render(<Button variant="primary" size="lg">Click me</Button>)
+    render(
+      <Button variant="primary" size="lg">
+        Click me
+      </Button>,
+    )
     const btn = screen.getByRole('button', { name: /click me/i })
     expect(btn).toBeInTheDocument()
     expect(btn).toHaveClass('bg-blue-600')

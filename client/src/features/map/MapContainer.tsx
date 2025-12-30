@@ -50,9 +50,7 @@ export const MapContainer = () => {
         <NavigationControl position="top-right" />
         <ScaleControl position="bottom-left" maxWidth={100} unit="metric" />
 
-        <div
-          className="fixed bottom-2.5 left-[106px] px-1 py-0.5 bg-white border-2 border-t-0 text-xs font-medium"
-        >
+        <div className="fixed bottom-2.5 left-[106px] px-1 py-0.5 bg-white border-2 border-t-0 text-xs font-medium">
           Zoom: {currentZoom.toFixed(2)}
         </div>
 

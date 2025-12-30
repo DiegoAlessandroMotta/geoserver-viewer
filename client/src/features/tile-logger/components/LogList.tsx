@@ -6,7 +6,9 @@ export const LogList = () => {
 
   if (logs.length === 0) {
     return (
-      <div className="text-xs text-gray-500 p-2 font-medium">No hay registros aún</div>
+      <div className="text-xs text-gray-500 p-2 font-medium">
+        No hay registros aún
+      </div>
     )
   }
 

@@ -3,8 +3,14 @@ import { Spin } from '@/shared/components/Spin'
 import { LayerItem } from '@/features/sidebar/components/LayerItem'
 
 export const LayerToggleList = () => {
-  const { layers, toggleLayer, loading, isConfigured, authRequired, setLayerZooms } =
-    useLayerContext()
+  const {
+    layers,
+    toggleLayer,
+    loading,
+    isConfigured,
+    authRequired,
+    setLayerZooms,
+  } = useLayerContext()
   const layersArray = Array.from(layers.values())
 
   if (!isConfigured) {

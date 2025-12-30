@@ -47,7 +47,11 @@ describe('LayerToggleCard', () => {
     const toggle = vi.fn()
 
     vi.spyOn(layerHook, 'useLayerContext').mockReturnValue(
-      mockLayerCtx({ refreshLayers: refresh, loading: false, isConfigured: true }) as any,
+      mockLayerCtx({
+        refreshLayers: refresh,
+        loading: false,
+        isConfigured: true,
+      }) as any,
     )
     vi.spyOn(tileHook, 'useTileLoggerContext').mockReturnValue(
       mockTileLogger({ toggle, visible: false }) as any,

@@ -9,7 +9,9 @@ const baseCtx = {
 }
 
 vi.mock('@/features/sidebar/components/LayerItem', () => ({
-  LayerItem: (props: any) => <div data-testid={`li-${props.layer.fullName}`}>{props.layer.fullName}</div>,
+  LayerItem: (props: any) => (
+    <div data-testid={`li-${props.layer.fullName}`}>{props.layer.fullName}</div>
+  ),
 }))
 
 import * as layerHook from '@/shared/context/layer/useLayerContext'
@@ -38,7 +40,9 @@ describe('LayerToggleList', () => {
     } as any)
 
     render(<LayerToggleList />)
-    expect(screen.getByText(/Debes configurar la URL de GeoServer/i)).toBeTruthy()
+    expect(
+      screen.getByText(/Debes configurar la URL de GeoServer/i),
+    ).toBeTruthy()
   })
 
   it('shows loading state when loading', () => {

@@ -7,7 +7,9 @@ const makeCtx = (overrides: any = {}) => ({
 })
 
 vi.mock('@/features/map/components/CustomLayer', () => ({
-  CustomLayer: (props: any) => <div data-testid={`custom-${props.layer.fullName}`} />,
+  CustomLayer: (props: any) => (
+    <div data-testid={`custom-${props.layer.fullName}`} />
+  ),
 }))
 
 import * as layerHook from '@/shared/context/layer/useLayerContext'
@@ -19,7 +21,9 @@ describe('MapLayers', () => {
   beforeEach(() => vi.restoreAllMocks())
 
   it('renders nothing when layers is empty', () => {
-    vi.spyOn(layerHook, 'useLayerContext').mockReturnValue(makeCtx({ layers: new Map() }) as any)
+    vi.spyOn(layerHook, 'useLayerContext').mockReturnValue(
+      makeCtx({ layers: new Map() }) as any,
+    )
     const { container } = render(<MapLayers />)
     expect(container.firstChild).toBeNull()
   })
@@ -29,7 +33,9 @@ describe('MapLayers', () => {
     m.set('a', { fullName: 'a' })
     m.set('b', { fullName: 'b' })
 
-    vi.spyOn(layerHook, 'useLayerContext').mockReturnValue(makeCtx({ layers: m }) as any)
+    vi.spyOn(layerHook, 'useLayerContext').mockReturnValue(
+      makeCtx({ layers: m }) as any,
+    )
 
     render(<MapLayers />)
 

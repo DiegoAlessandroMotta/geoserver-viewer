@@ -30,11 +30,16 @@ export const LayerItem = ({ layer, onToggle, onZoomChange }: Props) => {
       setMinLocal(layer.minZoom ?? globalMinZoom)
       setMaxLocal(layer.maxZoom ?? globalMaxZoom)
     }
-  }, [layer.fullName, layer.minZoom, layer.maxZoom, globalMinZoom, globalMaxZoom])
+  }, [
+    layer.fullName,
+    layer.minZoom,
+    layer.maxZoom,
+    globalMinZoom,
+    globalMaxZoom,
+  ])
 
   const debouncedMin = useDebounce(minLocal, 300)
   const debouncedMax = useDebounce(maxLocal, 300)
-
 
   useEffect(() => {
     const currentMin = layer.minZoom ?? globalMinZoom
