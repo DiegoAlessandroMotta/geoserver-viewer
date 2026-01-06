@@ -415,9 +415,7 @@ describe('LayerContextProvider', () => {
   it('does not update state after unmount when refresh resolves later', async () => {
     let resolveFn: any
     const p = new Promise((r) => (resolveFn = r))
-    const fetchSpy2 = vi
-      .spyOn(geoserverService, 'fetchWMSLayers')
-      .mockReturnValue(p as any)
+    vi.spyOn(geoserverService, 'fetchWMSLayers').mockReturnValue(p as any)
     const loggerDebug = vi.spyOn(logger, 'debug')
 
     const { unmount } = render(
@@ -460,8 +458,6 @@ describe('LayerContextProvider', () => {
         color: '#fff',
       },
     ])
-
-    fetchSpy2
 
     await act(async () => {
       await Promise.resolve()
