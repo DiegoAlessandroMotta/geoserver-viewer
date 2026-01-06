@@ -21,47 +21,16 @@ export class ProxyGeoserverController {
         req.get('X-GeoServer-BaseUrl'),
       )
 
-      if (!geoServerUrl) {
-        this._logger.warn({
-          message: 'Missing or invalid X-GeoServer-BaseUrl header',
-          context: { path: req.path },
-        })
-
-        res.status(400).json({
-          error: 'Missing X-GeoServer-BaseUrl header',
-          message:
-            'The X-GeoServer-BaseUrl header is required for all GeoServer requests',
-        })
+      if (!this.validateGeoServerUrl(geoServerUrl, req, res)) {
         return
       }
 
-      const joinUrl = (base: string, path: string): string => {
-        const normalizedBase = String(base).replace(/\/+$/, '')
-        const normalizedPath = String(path).replace(/^\/+/, '')
-        return `${normalizedBase}/${normalizedPath}`
-      }
-
-      const targetUrl = joinUrl(geoServerUrl, req.url)
-
-      const headers: Record<string, string> = {}
-      for (const [key, value] of Object.entries(req.headers)) {
-        if (!value) continue
-        const lower = key.toLowerCase()
-        if (lower === 'host') continue
-        if (Array.isArray(value)) {
-          headers[key] = value.join(',')
-        } else {
-          headers[key] = String(value)
-        }
-      }
+      const targetUrl = this.buildTargetUrl(geoServerUrl, req.url)
+      const headers = this.buildRequestHeaders(req)
 
       this._logger.debug(targetUrl)
 
-      if (!['GET', 'HEAD'].includes(req.method.toUpperCase())) {
-        res.status(405).json({
-          error: 'Method not allowed',
-          message: 'Only GET and HEAD methods are supported by the proxy',
-        })
+      if (!this.validateHttpMethod(req, res)) {
         return
       }
 
@@ -71,36 +40,100 @@ export class ProxyGeoserverController {
         headers,
       })
 
-      const responseHeaders = this._useCase.getResponseHeaders(response.headers)
-      for (const [key, value] of Object.entries(responseHeaders)) {
-        res.setHeader(key, value)
-      }
-
-      res.setHeader('Access-Control-Allow-Origin', '*')
-      res.removeHeader('ETag')
-      res.removeHeader('cache-control')
-
+      this.setResponseHeaders(res, response.headers)
       this.notifyWebSocketClientsIfNeeded(req, res, targetUrl, response)
-
-      res.status(response.status)
-
-      if (response.body) {
-        const reader = response.body.getReader()
-        try {
-          while (true) {
-            const { done, value } = await reader.read()
-            if (done) break
-            res.write(Buffer.from(value))
-          }
-        } finally {
-          reader.releaseLock()
-        }
-      }
-
-      res.send()
+      await this.sendResponseBody(res, response)
     } catch (error) {
       next(error)
     }
+  }
+
+  private validateGeoServerUrl(
+    geoServerUrl: string | null,
+    req: Request,
+    res: Response,
+  ): boolean {
+    if (geoServerUrl) {
+      return true
+    }
+
+    this._logger.warn({
+      message: 'Missing or invalid X-GeoServer-BaseUrl header',
+      context: { path: req.path },
+    })
+
+    res.status(400).json({
+      error: 'Missing X-GeoServer-BaseUrl header',
+      message:
+        'The X-GeoServer-BaseUrl header is required for all GeoServer requests',
+    })
+    return false
+  }
+
+  private buildTargetUrl(base: string, path: string): string {
+    const normalizedBase = String(base).replace(/\/+$/, '')
+    const normalizedPath = String(path).replace(/^\/+/, '')
+    return `${normalizedBase}/${normalizedPath}`
+  }
+
+  private buildRequestHeaders(req: Request): Record<string, string> {
+    const headers: Record<string, string> = {}
+    for (const [key, value] of Object.entries(req.headers)) {
+      if (!value) continue
+      const lower = key.toLowerCase()
+      if (lower === 'host') continue
+      if (Array.isArray(value)) {
+        headers[key] = value.join(',')
+      } else {
+        headers[key] = String(value)
+      }
+    }
+    return headers
+  }
+
+  private validateHttpMethod(req: Request, res: Response): boolean {
+    if (['GET', 'HEAD'].includes(req.method.toUpperCase())) {
+      return true
+    }
+
+    res.status(405).json({
+      error: 'Method not allowed',
+      message: 'Only GET and HEAD methods are supported by the proxy',
+    })
+    return false
+  }
+
+  private setResponseHeaders(res: Response, responseHeaders: Headers): void {
+    const headers = this._useCase.getResponseHeaders(responseHeaders)
+    for (const [key, value] of Object.entries(headers)) {
+      res.setHeader(key, value)
+    }
+
+    res.setHeader('Access-Control-Allow-Origin', '*')
+    res.removeHeader('ETag')
+    res.removeHeader('cache-control')
+  }
+
+  private async sendResponseBody(
+    res: Response,
+    response: Awaited<ReturnType<ProxyGeoServerUseCase['execute']>>,
+  ): Promise<void> {
+    res.status(response.status)
+
+    if (response.body) {
+      const reader = response.body.getReader()
+      try {
+        while (true) {
+          const { done, value } = await reader.read()
+          if (done) break
+          res.write(Buffer.from(value))
+        }
+      } finally {
+        reader.releaseLock()
+      }
+    }
+
+    res.send()
   }
 
   private notifyWebSocketClientsIfNeeded = (
