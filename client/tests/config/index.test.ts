@@ -3,7 +3,7 @@ import { parseCenter, parseProxyUrl, parseBasePath } from '@/shared/config'
 
 describe('config parsers', () => {
   it('parseCenter returns default for null/invalid', () => {
-    expect(parseCenter(undefined)).toEqual({
+    expect(parseCenter()).toEqual({
       lat: -12.046390113132471,
       lon: -77.0427648515243,
     })
@@ -22,7 +22,7 @@ describe('config parsers', () => {
   })
 
   it('parseBasePath normalizes paths', () => {
-    expect(parseBasePath(undefined)).toBe('')
+    expect(parseBasePath()).toBe('')
     expect(parseBasePath('')).toBe('')
     expect(parseBasePath('/')).toBe('')
     expect(parseBasePath('app')).toBe('/app')
@@ -30,7 +30,7 @@ describe('config parsers', () => {
   })
 
   it('parseProxyUrl handles absolute and relative paths', () => {
-    const base = window.location.origin
+    const base = globalThis.location.origin
     const defaultVal = base + '/api/proxy'
 
     expect(parseProxyUrl(undefined, '')).toBe(defaultVal)

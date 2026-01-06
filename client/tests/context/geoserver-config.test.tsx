@@ -14,21 +14,33 @@ function Consumer() {
       <span data-testid="session">{String(ctx.sessionId)}</span>
       <span data-testid="cred-user">{String(ctx.credentials.username)}</span>
       <span data-testid="cred-pass">{String(ctx.credentials.password)}</span>
-      <button onClick={() => ctx.setConfig({ geoserverUrl: 'new' })}>set</button>
+      <button onClick={() => ctx.setConfig({ geoserverUrl: 'new' })}>
+        set
+      </button>
       <button onClick={() => ctx.clearConfig()}>clear</button>
-      <button onClick={() => ctx.setCredentials({ username: 'u', password: 'p' }, true)}>setCred</button>
+      <button
+        onClick={() =>
+          ctx.setCredentials({ username: 'u', password: 'p' }, true)
+        }
+      >
+        setCred
+      </button>
       <button onClick={() => ctx.clearCredentials()}>clearCred</button>
     </div>
   )
 }
 
 describe('GeoserverConfigProvider', () => {
-
   beforeEach(() => {
-    vi.spyOn(geoserverConfigService, 'getGeoserverUrl').mockReturnValue('http://g')
+    vi.spyOn(geoserverConfigService, 'getGeoserverUrl').mockReturnValue(
+      'http://g',
+    )
     vi.spyOn(geoserverConfigService, 'getWorkspace').mockReturnValue('ws')
     vi.spyOn(geoserverConfigService, 'getSessionId').mockReturnValue('sid')
-    vi.spyOn(geoserverConfigService, 'getCredentials').mockReturnValue({ username: null, password: null })
+    vi.spyOn(geoserverConfigService, 'getCredentials').mockReturnValue({
+      username: null,
+      password: null,
+    })
   })
 
   afterEach(() => {
@@ -76,7 +88,10 @@ describe('GeoserverConfigProvider', () => {
     )
 
     act(() => screen.getByText('setCred').click())
-    expect(setCredSpy).toHaveBeenCalledWith({ username: 'u', password: 'p' }, true)
+    expect(setCredSpy).toHaveBeenCalledWith(
+      { username: 'u', password: 'p' },
+      true,
+    )
 
     act(() => screen.getByText('clearCred').click())
     expect(clearCredSpy).toHaveBeenCalled()
@@ -84,10 +99,12 @@ describe('GeoserverConfigProvider', () => {
 
   it('updates state when service emits change', () => {
     let cb: any = null
-    const onChangeMock = vi.spyOn(geoserverConfigService, 'onChange').mockImplementation((c: any) => {
-      cb = c
-      return () => {}
-    })
+    const onChangeMock = vi
+      .spyOn(geoserverConfigService, 'onChange')
+      .mockImplementation((c: any) => {
+        cb = c
+        return () => {}
+      })
 
     render(
       <GeoserverConfigProvider>
@@ -112,7 +129,7 @@ describe('GeoserverConfigProvider', () => {
   })
 
   it('useGeoserverConfig throws when used outside provider', () => {
-    function Bad() {
+    const Bad = () => {
       useGeoserverConfig()
       return null
     }
