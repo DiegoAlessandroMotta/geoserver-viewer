@@ -43,17 +43,17 @@ describe('CustomLayer', () => {
 
     const src = screen.getByTestId('source-ns:myLayer')
     expect(src).toBeTruthy()
-    expect(src.getAttribute('data-tiles')).toBeTruthy()
+    expect(src.dataset.tiles).toBeTruthy()
 
     expect(screen.getByTestId('layer-myLayer-fill')).toBeTruthy()
     expect(screen.getByTestId('layer-myLayer-line')).toBeTruthy()
     expect(screen.getByTestId('layer-myLayer-point')).toBeTruthy()
 
     const fill = screen.getByTestId('layer-myLayer-fill')
-    expect(fill.getAttribute('data-minzoom')).toBe('2')
-    expect(fill.getAttribute('data-maxzoom')).toBe('10')
+    expect(fill.dataset.minzoom).toBe('2')
+    expect(fill.dataset.maxzoom).toBe('10')
 
-    const layout = JSON.parse(fill.getAttribute('data-layout') || '{}')
+    const layout = JSON.parse(fill.dataset.layout || '{}')
     expect(layout.visibility).toBe('visible')
   })
 
