@@ -4,6 +4,9 @@ import React, { useEffect } from 'react'
 import { MapContainer } from '@/features/map/MapContainer'
 import { geoserverService } from '@/shared/providers'
 
+const mockMap = { getZoom: () => 7.5 }
+const mockGetMap = () => mockMap
+
 vi.mock('react-map-gl/maplibre', () => {
   return {
     __esModule: true,
@@ -11,7 +14,7 @@ vi.mock('react-map-gl/maplibre', () => {
       ({ transformRequest, onMove, children }: any, ref: any) => {
         useEffect(() => {
           if (ref) {
-            ref.current = { getMap: () => ({ getZoom: () => 7.5 }) }
+            ref.current = { getMap: mockGetMap }
           }
         }, [ref])
 
@@ -51,7 +54,7 @@ describe('MapContainer', () => {
 
     const map = screen.getByTestId('mock-map')
     const transform: any = JSON.parse(
-      map.getAttribute('data-transform') || '{}',
+      map.dataset.transform || '{}',
     )
     expect(transform.withGeo.headers).toEqual({ Authorization: 'x' })
     expect(transform.withoutGeo.headers).toBeUndefined()
