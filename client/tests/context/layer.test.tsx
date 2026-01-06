@@ -461,7 +461,7 @@ describe('LayerContextProvider', () => {
       },
     ])
 
-    void fetchSpy2
+    fetchSpy2
 
     await act(async () => {
       await Promise.resolve()
