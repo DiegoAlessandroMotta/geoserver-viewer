@@ -61,12 +61,12 @@ export class GeoserverService {
     return this.httpClient.getDefaultHeaders(Boolean(includeCredentials))
   }
 
-  private parseResourceInfo = (resourceUrl?: string) => {
+  private readonly parseResourceInfo = (resourceUrl?: string) => {
     if (!resourceUrl) return { workspace: null, store: null }
 
-    const match = resourceUrl.match(
-      /\/workspaces\/([^/]+)\/(?:datastores|stores|coveragestores)\/([^/]+)/i,
-    )
+    const re =
+      /\/workspaces\/([^/]+)\/(?:datastores|stores|coveragestores)\/([^/]+)/i
+    const match = re.exec(resourceUrl)
 
     if (match) {
       return {

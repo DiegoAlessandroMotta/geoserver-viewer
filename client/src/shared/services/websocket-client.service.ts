@@ -47,7 +47,7 @@ export class WebsocketClient {
     logger,
     configManager,
     WSClass = WebSocket,
-    location = window.location,
+    location = globalThis.location,
     config,
   }: WebsocketClientOptions) {
     this.logger = logger
@@ -68,12 +68,12 @@ export class WebsocketClient {
       const url = new URL(base)
       url.protocol = url.protocol === 'https:' ? 'wss:' : 'ws:'
       const basePath = this.config.basePath ?? ''
-      url.pathname = (basePath + '/ws').replace(/\/+/g, '/')
+      url.pathname = (basePath + '/ws').replaceAll(/\/+/g, '/')
       return url.toString()
     } catch {
       const protocol = this.location.protocol === 'https:' ? 'wss' : 'ws'
       const basePath = this.config.basePath ?? ''
-      return `${protocol}://${this.location.host}${basePath}/ws`.replace(
+      return `${protocol}://${this.location.host}${basePath}/ws`.replaceAll(
         /\/+/g,
         '/',
       )
