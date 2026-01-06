@@ -67,6 +67,11 @@ export function parseBasePath(value?: string): string {
   return base
 }
 
+const parseEnvNumber = (value: unknown, fallback: number) => {
+  const parsed = Number(value as any)
+  return Number.isFinite(parsed) ? parsed : fallback
+}
+
 export const appConfig = {
   basePath: parseBasePath(import.meta.env.VITE_BASE_PATH),
   proxyUrl: parseProxyUrl(
@@ -74,9 +79,9 @@ export const appConfig = {
     parseBasePath(import.meta.env.VITE_BASE_PATH),
   ),
   mapCenter: parseCenter(import.meta.env.VITE_MAP_CENTER),
-  mapZoom: Number(import.meta.env.VITE_MAP_ZOOM),
-  mapMinZoom: Number(import.meta.env.VITE_MAP_MIN_ZOOM),
-  mapMaxZoom: Number(import.meta.env.VITE_MAP_MAX_ZOOM),
+  mapZoom: parseEnvNumber(import.meta.env.VITE_MAP_ZOOM, 10),
+  mapMinZoom: parseEnvNumber(import.meta.env.VITE_MAP_MIN_ZOOM, 2),
+  mapMaxZoom: parseEnvNumber(import.meta.env.VITE_MAP_MAX_ZOOM, 22),
   mapStyle: String(
     import.meta.env.VITE_MAP_STYLE ??
       'https://basemaps.cartocdn.com/gl/positron-gl-style/style.json',
